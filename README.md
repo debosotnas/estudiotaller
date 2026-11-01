@@ -40,6 +40,11 @@ Con **✎ editar contenido** activado:
 - **Temas:** Señal oscuro, Señal claro, Papel y Noche (en índice). Los colores se guardan por nombre (lima, fucsia…), así que al cambiar de tema todo se recolorea, también en las libres.
 - **.pptx:** exporta también las libres; las imágenes se descargan e incluyen si el sitio lo permite (si no, queda el enlace).
 
+## Deshacer y versiones
+
+- **↶ / ↷** (o **Ctrl+Z / Ctrl+Shift+Z**) en la consola deshacen y rehacen cualquier cambio de contenido: textos, slides agregadas o borradas, movimientos, bloques, actividades. Cada ráfaga de cambios es un paso; hasta 100 pasos por sesión.
+- **Versiones guardadas** (índice → «versiones guardadas…»): se guardan solas al empezar a editar, cada 10 minutos de edición y antes de borrar, liberar o restaurar; también se pueden guardar a mano con un nombre. Se conservan las últimas 40 por presentación. Restaurar guarda antes la versión actual, así que nunca se pierde nada.
+
 ## Presentar
 
 1. Abrí `/presentar` en el portátil (Chrome o Edge) y entrá con Google.

@@ -2,7 +2,7 @@
 // que Firebase Hosting publica en /__/firebase/init.json.
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import { getAuth, connectAuthEmulator, onAuthStateChanged, signInAnonymously, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import { getFirestore, connectFirestoreEmulator, doc, collection, setDoc, updateDoc, getDoc, deleteDoc, onSnapshot, query, where, orderBy, serverTimestamp, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+import { getFirestore, connectFirestoreEmulator, doc, collection, setDoc, updateDoc, getDoc, deleteDoc, onSnapshot, query, where, orderBy, limit, serverTimestamp, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 export const ADMINS = ["obed.santos@gmail.com"];
 export const RAIZ = "estudiotaller"; // colección raíz: estudiotaller/{sesion}/respuestas/{actividad__uid}
@@ -65,5 +65,7 @@ export const refPizarron = (sid, n) => doc(db, RAIZ, sid, "pizarrones", String(n
 export const refTrazos = (sid, n) => collection(db, RAIZ, sid, "pizarrones", String(n), "trazos");
 export const refVivo = (sid, n) => doc(db, RAIZ, sid, "pizarron_vivo", String(n));
 export const consultaTrazos = (sid, n) => query(refTrazos(sid, n), orderBy("o"));
+// Versiones guardadas del contenido (para volver atrás)
+export const refVersiones = (sid) => collection(db, RAIZ, sid, "versiones");
 
-export { onAuthStateChanged, doc, collection, setDoc, updateDoc, getDoc, deleteDoc, onSnapshot, query, where, orderBy, serverTimestamp, writeBatch, getDocs };
+export { onAuthStateChanged, doc, collection, setDoc, updateDoc, getDoc, deleteDoc, onSnapshot, query, where, orderBy, limit, serverTimestamp, writeBatch, getDocs };

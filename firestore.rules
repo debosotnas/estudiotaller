@@ -64,6 +64,10 @@ service cloud.firestore {
           allow write: if puedeEditar(sid);
         }
       }
+      // versiones guardadas del contenido: solo quienes editan
+      match /versiones/{v} {
+        allow read, write: if puedeEditar(sid);
+      }
       // trazo en curso: solo entre la tablet y la consola
       match /pizarron_vivo/{n} {
         allow read, write: if puedeEditar(sid);

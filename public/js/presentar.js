@@ -129,17 +129,78 @@ async function consola() {
     if (Object.keys(n).length) fb.updateDoc(refNav, { ...n, actualizado: fb.serverTimestamp() }).catch(err);
     if (Object.keys(s).length) fb.updateDoc(ref, { ...s, actualizado: fb.serverTimestamp() }).catch(err);
   };
+  // ---- guardar, deshacer/rehacer y versiones ----
+  const estadoJSON = () => JSON.stringify({ diapositivas: diapos, bloques: bloquesLista, actividades: def.actividades, muros: def.muros });
+  let ultimoEstado = estadoJSON(); // lo último guardado
+  const pilaDeshacer = [], pilaRehacer = [];
+  let enRafaga = false, restaurando = false, versionAlAbrir = false, ultimaVersion = Date.now();
   let tGuardar = null;
   const guardarContenido = () => {
+    // Cada ráfaga de cambios (hasta que se guarda) es un paso de «deshacer»
+    if (!enRafaga && !restaurando) {
+      pilaDeshacer.push(ultimoEstado);
+      if (pilaDeshacer.length > 100) pilaDeshacer.shift();
+      pilaRehacer.length = 0;
+      enRafaga = true;
+      // La primera edición de esta sesión guarda una versión del contenido tal como estaba
+      if (!versionAlAbrir) { versionAlAbrir = true; crearVersion("antes de editar (al abrir la consola)", ultimoEstado); }
+    }
     clearTimeout(tGuardar);
     document.getElementById("guardado").textContent = "guardando…";
+    actualizarBotonesHistorial();
     tGuardar = setTimeout(async () => {
+      const json = estadoJSON();
       try {
-        await fb.setDoc(fb.refContenido(sid), { json: JSON.stringify({ diapositivas: diapos, bloques: bloquesLista, actividades: def.actividades, muros: def.muros }), actualizado: fb.serverTimestamp() });
+        await fb.setDoc(fb.refContenido(sid), { json, actualizado: fb.serverTimestamp() });
+        ultimoEstado = json;
+        enRafaga = false;
         document.getElementById("guardado").textContent = "guardado ✓";
+        if (Date.now() - ultimaVersion > 10 * 60 * 1000) crearVersion("automática (cada 10 min de edición)", json);
       } catch (err) { document.getElementById("guardado").textContent = "error al guardar"; toast(err.message); }
+      actualizarBotonesHistorial();
     }, 700);
   };
+  function aplicarEstado(json) {
+    const d = JSON.parse(json);
+    diapos.splice(0, diapos.length, ...d.diapositivas);
+    bloquesLista.splice(0, bloquesLista.length, ...(d.bloques || []));
+    def.actividades = d.actividades || [];
+    def.muros = d.muros || [];
+    base = { ...base, bloques: mapaBloques(bloquesLista) };
+    acts = resolverActividades(def, diapos);
+    if (!porId(e.actual)) guardar({ actual: (vis()[0] || diapos[0]).id, paso: 0 });
+    selEl = null;
+    $der.dataset.id = "";
+  }
+  function moverHistorial(desde, hacia, nada) {
+    if (enLugar) enLugar(true);
+    const prev = desde.pop();
+    if (!prev) return toast(nada);
+    hacia.push(estadoJSON());
+    enRafaga = false;
+    aplicarEstado(prev);
+    restaurando = true;
+    guardarContenido();
+    restaurando = false;
+    render();
+    if (document.getElementById("modal").dataset.vista === "indice") indice();
+  }
+  const deshacer = () => moverHistorial(pilaDeshacer, pilaRehacer, "No hay nada para deshacer.");
+  const rehacer = () => moverHistorial(pilaRehacer, pilaDeshacer, "No hay nada para rehacer.");
+  function actualizarBotonesHistorial() {
+    const d = document.getElementById("bdeshacer"), r = document.getElementById("brehacer");
+    if (d) d.disabled = !pilaDeshacer.length;
+    if (r) r.disabled = !pilaRehacer.length;
+  }
+  // Versión guardada en Firestore (se conservan las últimas 40)
+  async function crearVersion(motivo, json = estadoJSON()) {
+    ultimaVersion = Date.now();
+    try {
+      await fb.setDoc(fb.doc(fb.refVersiones(sid)), { json, motivo, autor: user.email || "", n: JSON.parse(json).diapositivas.length, creado: fb.serverTimestamp() });
+      const viejas = (await fb.getDocs(fb.query(fb.refVersiones(sid), fb.orderBy("creado", "desc")))).docs.slice(40);
+      if (viejas.length) { const b = fb.writeBatch(fb.db); viejas.forEach((d) => b.delete(d.ref)); await b.commit(); }
+    } catch (err) { console.warn("versión", err); }
+  }
 
   // Pizarrones: la consola los escucha para mandarlos al proyector; la tablet puede mostrarlos u ocultarlos
   const pz = { 1: {}, 2: {}, 3: {}, 4: {} };
@@ -201,6 +262,8 @@ async function consola() {
           <button class="btn sec-btn chico" id="bnueva" title="Agregar una diapositiva después de esta">+ diapositiva</button>
           <button class="btn sec-btn chico" id="bdup" title="Duplicar esta diapositiva">⧉</button>
           <button class="btn sec-btn chico peligro" id="bborrar" title="Borrar esta diapositiva">✕</button>
+          <button class="btn sec-btn chico" id="bdeshacer" title="Deshacer (Ctrl+Z)" disabled>↶</button>
+          <button class="btn sec-btn chico" id="brehacer" title="Rehacer (Ctrl+Shift+Z)" disabled>↷</button>
           <span class="rotulo" id="guardado"></span>
           <span class="aviso-cabe" id="aviso-cabe" hidden></span>
         </div>
@@ -232,6 +295,8 @@ async function consola() {
   document.getElementById("bdup").onclick = () => duplicar(e.actual);
   document.getElementById("bborrar").onclick = () => borrar(e.actual);
   document.getElementById("bliberar").onclick = liberar;
+  document.getElementById("bdeshacer").onclick = deshacer;
+  document.getElementById("brehacer").onclick = rehacer;
   document.getElementById("chk-pasos").onchange = (ev) => {
     const s = porId(e.actual);
     if (ev.target.checked) s.pasos = true; else delete s.pasos;
@@ -252,6 +317,8 @@ async function consola() {
   addEventListener("resize", () => { encajar(st); const n = $der.querySelector(".stage"); if (n) encajar(n); });
   document.addEventListener("keydown", (ev) => {
     if (ev.target.closest?.("input, textarea, select") || ev.target.isContentEditable) return;
+    const z = (ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === "z", y = (ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === "y";
+    if (z || y) { ev.preventDefault(); return z && !ev.shiftKey ? deshacer() : rehacer(); }
     if (atajoLibre(ev)) return;
     if (!document.getElementById("modal").hidden) { if (ev.key === "Escape") cerrarModal(); return; }
     if (TECLAS.has(ev.key) || LETRAS.includes(ev.key)) { ev.preventDefault(); tecla(ev.key); }
@@ -675,7 +742,9 @@ async function consola() {
   function liberar() {
     const s = actualS();
     if (s.plantilla === "libre") return;
+    const antes = estadoJSON();
     if (!confirm("¿Convertir esta diapositiva en libre?\n\nVas a poder mover, redimensionar, agregar y borrar cada elemento. A cambio deja de acomodarse sola: si después cambiás textos largos, ajustá vos los tamaños. Si tiene una votación o clasificación, los resultados se muestran en el panel general.")) return;
+    crearVersion(`antes de liberar la diapositiva ${numeroDe(diapos, s.id) ?? ""}`, antes);
     const libre = aLibre(s, { ...base, numero: numeroDe(diapos, s.id), total: vis().length });
     diapos[indicede(s.id)] = libre;
     selEl = null;
@@ -823,6 +892,7 @@ async function consola() {
     if (diapos.length <= 1) return toast("La presentación tiene que tener al menos una diapositiva.");
     const s = porId(id);
     if (!confirm(`¿Borrar la diapositiva ${numeroDe(diapos, id) ?? "(oculta)"} «${tituloDe(s).slice(0, 60)}»? No se puede deshacer.`)) return;
+    crearVersion(`antes de borrar la diapositiva ${numeroDe(diapos, id) ?? "(oculta)"} «${tituloDe(s).slice(0, 40)}»`);
     const k = indicede(id);
     const destino = id === e.actual ? (diapos[k + 1] || diapos[k - 1]).id : null;
     diapos.splice(k, 1);
@@ -888,6 +958,7 @@ async function consola() {
           <button class="btn sec-btn chico" id="nbloque">+ bloque</button></div>
         <div class="idx-opciones">
           <label class="ed-campo"><span class="rotulo">tema</span><select id="tema">${Object.entries(TEMAS_NOMBRES).map(([k, t]) => `<option value="${k}" ${tema === k ? "selected" : ""}>${t}</option>`).join("")}</select></label>
+          <button class="btn sec-btn chico" id="bversiones">versiones guardadas…</button>
           <button class="btn chico" id="pptx">descargar .pptx</button>
           <button class="btn sec-btn chico" id="exp">exportar json</button>
           ${pres.esTaller ? `<button class="btn peligro chico" id="rest">restablecer desde el json publicado</button>` : ""}
@@ -946,6 +1017,7 @@ async function consola() {
       cambioEstructura();
     };
     $m.querySelector("#pptx").onclick = exportarPptx;
+    $m.querySelector("#bversiones").onclick = versiones;
     $m.querySelector("#exp").onclick = () => {
       const json = structuredClone(datos.taller);
       json.meta = { ...json.meta, titulo: pres.titulo };
@@ -958,6 +1030,7 @@ async function consola() {
     };
     const rest = $m.querySelector("#rest");
     if (rest) rest.onclick = async () => {
+      await crearVersion("antes de restablecer desde el JSON publicado");
       if (!confirm("¿Descartar todas las ediciones hechas acá (contenido, notas, pasos, ocultas) y volver al JSON publicado?")) return;
       await fb.deleteDoc(fb.refContenido(sid));
       location.reload();
@@ -1006,6 +1079,40 @@ async function consola() {
     x.imageSmoothingEnabled = false;
     x.drawImage(img, 0, 0, lado, lado);
     return c.toDataURL("image/png").replace(/^data:/, "");
+  }
+
+  // ---- versiones guardadas: ver y restaurar ----
+  async function versiones() {
+    const $m = document.getElementById("modal");
+    $m.hidden = false;
+    $m.dataset.vista = "versiones";
+    $m.innerHTML = `<div class="modal-caja"><div class="fila" style="margin-bottom:12px"><h2 style="margin:0;margin-right:auto">Versiones guardadas</h2>
+      <button class="btn sec-btn chico" id="vguardar">guardar versión ahora</button><button class="btn chico" id="cerrar">cerrar (esc)</button></div>
+      <p class="sec" style="margin:0 0 12px">Se guardan solas al empezar a editar, cada 10 minutos de edición y antes de borrar, liberar o restaurar. Se conservan las últimas 40. Restaurar no borra nada: antes guarda la versión actual.</p>
+      <div class="lista-idx" id="lista-v"><p class="sec">cargando…</p></div></div>`;
+    $m.querySelector("#cerrar").onclick = cerrarModal;
+    $m.querySelector("#vguardar").onclick = async () => { const motivo = prompt("Nombre de esta versión:", "guardada a mano"); if (motivo == null) return; await crearVersion(motivo || "guardada a mano"); versiones(); };
+    $m.onclick = (ev) => { if (ev.target === $m) cerrarModal(); };
+    const qs = await fb.getDocs(fb.query(fb.refVersiones(sid), fb.orderBy("creado", "desc"), fb.limit(40)));
+    const $l = $m.querySelector("#lista-v");
+    if (!$l) return;
+    $l.innerHTML = qs.empty ? `<p class="sec">Todavía no hay versiones guardadas.</p>` : qs.docs.map((d) => {
+      const v = d.data(), f = v.creado?.toDate?.();
+      return `<div class="idx version"><span class="mono sec">${f ? f.toLocaleString("es", { dateStyle: "short", timeStyle: "short" }) : "ahora"}</span><span class="t">${esc(v.motivo || "")} <span class="sec">· ${v.n ?? "?"} diapositivas${v.autor && v.autor !== user.email ? ` · ${esc(v.autor)}` : ""}</span></span><button class="btn sec-btn chico" data-restaurar="${d.id}">restaurar</button></div>`;
+    }).join("");
+    $l.querySelectorAll("[data-restaurar]").forEach((b) => (b.onclick = async () => {
+      const v = qs.docs.find((d) => d.id === b.dataset.restaurar).data();
+      if (!confirm(`¿Volver a la versión «${v.motivo}»? La actual queda guardada como versión, por si querés volver.`)) return;
+      await crearVersion("antes de restaurar otra versión");
+      pilaDeshacer.push(estadoJSON());
+      aplicarEstado(v.json);
+      restaurando = true;
+      guardarContenido();
+      restaurando = false;
+      cerrarModal();
+      render();
+      toast("Versión restaurada (se puede deshacer con Ctrl+Z).");
+    }));
   }
 
   function cerrarModal() { const m = document.getElementById("modal"); m.hidden = true; m.dataset.vista = ""; }
