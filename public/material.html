@@ -14,5 +14,6 @@
 <body>
   <main class="mat" id="app"><p class="sec mono">cargando…</p></main>
   <script type="module" src="/js/material.js"></script>
+  <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});</script>
 </body>
 </html>

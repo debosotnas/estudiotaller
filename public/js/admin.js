@@ -73,8 +73,17 @@ function iniciar() {
     <div class="tabla-wrap" id="tabla"></div>
     <div class="fila" style="margin-top:32px">
       <button class="btn sec-btn chico" id="csv-todo">descargar todo (csv, una fila por respuesta)</button>
-      <button class="btn peligro chico" id="reiniciar">reiniciar sesión (volver a la diapositiva 1)</button>
     </div>
+    <section class="preparar">
+      <h2>Preparar para el taller</h2>
+      <p class="sec">Deja todo limpio antes de empezar, por ejemplo después de un ensayo. El contenido de las diapositivas no se toca.</p>
+      <label class="interruptor"><input type="checkbox" id="p-copia" checked> descargar antes una copia de todas las respuestas (csv)</label>
+      <label class="interruptor"><input type="checkbox" id="p-resp" checked> borrar todas las respuestas <span class="sec" id="p-n"></span></label>
+      <label class="interruptor"><input type="checkbox" id="p-pz" checked> limpiar los 4 pizarrones (los dibujos se borran; el texto vuelve a su lugar)</label>
+      <label class="interruptor"><input type="checkbox" id="p-ses" checked> cerrar actividades, dejar de compartir y volver a la primera diapositiva</label>
+      <div class="acciones"><button class="btn peligro" id="preparar">preparar</button></div>
+      <p class="sec" style="font-size:14px">Para ensayar sin tocar la presentación real, en «Mis presentaciones» usá <b>duplicar</b> y ensayá en la copia.</p>
+    </section>
   </div>`;
 
   document.getElementById("salir").onclick = async () => { await fb.salir(); location.reload(); };
@@ -126,15 +135,31 @@ function iniciar() {
       toast("Respuestas borradas");
     };
     document.getElementById("csv-todo").onclick = () => bajar(`${sid}-todas.csv`, aCSV(filasLargas()), "text/csv");
-    document.getElementById("reiniciar").onclick = async () => {
-      if (!confirm("¿Volver a la primera diapositiva, cerrar actividades y dejar de compartir? Las respuestas NO se borran.")) return;
-      await Promise.all([
+    document.getElementById("p-n").textContent = `(${respuestas.length})`;
+  }
+
+  // ---- preparar para el taller ----
+  document.getElementById("preparar").onclick = async () => {
+    const q = (id) => document.getElementById(id).checked;
+    const hacer = [q("p-resp") && `borrar las ${respuestas.length} respuestas`, q("p-pz") && "limpiar los pizarrones", q("p-ses") && "volver a la primera diapositiva"].filter(Boolean);
+    if (!hacer.length && !q("p-copia")) return toast("No marcaste nada.");
+    if (hacer.length && !confirm(`Se va a ${hacer.join(", ")}. ¿Seguimos?`)) return;
+    const b = document.getElementById("preparar");
+    b.disabled = true;
+    try {
+      if (q("p-copia") && respuestas.length) bajar(`${sid}-respuestas-${new Date().toISOString().slice(0, 16).replace(/[:T]/g, "-")}.csv`, aCSV(filasLargas()), "text/csv");
+      const refs = [];
+      if (q("p-resp")) refs.push(...(await fb.getDocs(fb.refRespuestas(sid))).docs.map((d) => d.ref));
+      if (q("p-pz")) for (const k of [1, 2, 3, 4]) refs.push(...(await fb.getDocs(fb.refTrazos(sid, k))).docs.map((d) => d.ref), fb.refPizarron(sid, k), fb.refVivo(sid, k));
+      for (let i = 0; i < refs.length; i += 400) { const wb = fb.writeBatch(fb.db); refs.slice(i, i + 400).forEach((r) => wb.delete(r)); await wb.commit(); }
+      if (q("p-ses")) await Promise.all([
         fb.setDoc(fb.refSesion(sid), { actividad: null, abierta: false, compartida: null, actualizado: fb.serverTimestamp() }),
         fb.setDoc(fb.refNav(sid), { actual: null, paso: 0, revelar: false, destacadas: [], pizarron: null, actualizado: fb.serverTimestamp() }),
       ]);
-      toast("Sesión reiniciada");
-    };
-  }
+      toast("Listo: todo preparado. Si la consola estaba abierta, recargala.");
+    } catch (e) { toast("No se pudo completar: " + e.message); }
+    b.disabled = false;
+  };
 
   // Formato largo: una fila por cada respuesta a cada pregunta (cómodo para filtrar y agrupar)
   function filasLargas() {

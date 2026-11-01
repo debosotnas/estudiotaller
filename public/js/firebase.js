@@ -2,7 +2,7 @@
 // que Firebase Hosting publica en /__/firebase/init.json.
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import { getAuth, connectAuthEmulator, onAuthStateChanged, signInAnonymously, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import { getFirestore, connectFirestoreEmulator, doc, collection, setDoc, updateDoc, getDoc, deleteDoc, onSnapshot, query, where, orderBy, limit, serverTimestamp, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, memoryLocalCache, connectFirestoreEmulator, doc, collection, setDoc, updateDoc, getDoc, deleteDoc, onSnapshot, query, where, orderBy, limit, serverTimestamp, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 export const ADMINS = ["obed.santos@gmail.com"];
 export const RAIZ = "estudiotaller"; // colección raíz: estudiotaller/{sesion}/respuestas/{actividad__uid}
@@ -16,7 +16,13 @@ const config = local
 
 const app = initializeApp(config);
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+// Caché local en el dispositivo: si se corta la señal, se sigue leyendo lo último conocido y lo que se escribe
+// queda en cola y se envía solo al volver la conexión. (Si el navegador no lo permite, caché en memoria.)
+function iniciarFirestore() {
+  try { return initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) }); }
+  catch (e) { console.warn("sin caché persistente", e); return initializeFirestore(app, { localCache: memoryLocalCache() }); }
+}
+export const db = iniciarFirestore();
 if (local) {
   connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
   connectFirestoreEmulator(db, "127.0.0.1", 8080);

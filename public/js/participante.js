@@ -44,7 +44,11 @@ try {
   user = await entrarAnonimo();
 } catch (e) {
   console.error(e);
-  pintar(`<h1>No pudimos conectarte</h1><p class="sec">Revisá tu conexión a internet y volvé a cargar la página.</p><div class="acciones"><button class="btn" onclick="location.reload()">reintentar</button></div>${franja}`);
+  pintar(`<h1>Sin señal<span class="lima blink">_</span></h1><p class="sec">Para entrar hace falta conexión una vez. Apenas vuelva la señal, esta página se conecta sola.</p><div class="acciones"><button class="btn" onclick="location.reload()">reintentar ahora</button></div>${franja}`);
+  // reintenta sola al volver la conexión (y cada 10 s por si el aviso del navegador no llega)
+  addEventListener("online", () => location.reload(), { once: true });
+  let estabaSinRed = !navigator.onLine;
+  setInterval(() => { if (!navigator.onLine) estabaSinRed = true; else if (estabaSinRed) location.reload(); }, 5000);
   throw e;
 }
 
@@ -87,6 +91,13 @@ function escuchar() {
     console.error(err);
     pintar(`<h1>Se cortó la conexión</h1><p class="sec">Volvé a cargar la página.</p><div class="acciones"><button class="btn" onclick="location.reload()">recargar</button></div>${franja}`);
   };
+  // Aviso de «sin señal» (con una pequeña espera para no parpadear al abrir)
+  let tSenal = null;
+  onSnapshot(refSesion(sid), { includeMetadataChanges: true }, (snap) => {
+    clearTimeout(tSenal);
+    if (!snap.metadata.fromCache) { $quien.textContent = quien(); $quien.classList.remove("sin-senal"); return; }
+    tSenal = setTimeout(() => { $quien.textContent = "sin señal · reconectando…"; $quien.classList.add("sin-senal"); }, 2500);
+  }, () => {});
   onSnapshot(refSesion(sid), (snap) => {
     estado = snap.data() || {};
     compartida();
@@ -201,6 +212,14 @@ async function mostrarActividad(act) {
 }
 
 async function guardar(act, valores, grupo = null) {
+  // Sin señal, la respuesta queda en cola y se envía sola al volver: se avisa si tarda
+  const aviso = setTimeout(() => {
+    const d = document.getElementById("msg");
+    if (d) d.innerHTML = `<div class="estado-err">Sin señal: tu respuesta se va a enviar sola cuando vuelva la conexión. No cierres esta página.</div>`;
+  }, 3000);
+  try { await guardarYa(act, valores, grupo); } finally { clearTimeout(aviso); }
+}
+async function guardarYa(act, valores, grupo) {
   await setDoc(refRespuesta(sid, act.id, user.uid), {
     uid: user.uid,
     actividad: act.id,

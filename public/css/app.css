@@ -318,3 +318,10 @@ td.vacio { color: var(--linea); }
 .mini-campo input { padding: 6px; }
 .idx.version { grid-template-columns: 130px 1fr auto; cursor: default; }
 #bdeshacer:disabled, #brehacer:disabled { opacity: .35; }
+.preparar { margin-top: 40px; border-top: 1px solid var(--linea); padding-top: 20px; display: flex; flex-direction: column; gap: 10px; }
+.preparar h2 { font-size: 20px; margin: 0; }
+.preparar .interruptor { font-family: var(--sans); font-size: 15px; }
+
+/* sin conexión */
+.conexion { font-family: var(--mono); font-size: 12px; font-weight: 700; color: #FF4D4D; }
+#quien.sin-senal { color: #FF4D4D; }

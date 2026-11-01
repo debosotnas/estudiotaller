@@ -223,6 +223,22 @@ async function consola() {
       cambio();
     });
   });
+  // Conexión con el servidor: sin señal se sigue presentando; los cambios quedan en cola y se envían al volver
+  let tConexion = null;
+  const avisoConexion = (sinServidor, pendientes) => {
+    clearTimeout(tConexion);
+    const $c = document.getElementById("conexion");
+    if (!$c) return;
+    if (!sinServidor && !pendientes) { $c.hidden = true; return; }
+    // sin servidor: aviso enseguida; cambios que no logran enviarse: aviso a los 8 s
+    tConexion = setTimeout(() => {
+      $c.hidden = false;
+      $c.textContent = "● sin conexión · seguí presentando: los cambios se envían al volver";
+    }, sinServidor ? 2500 : 8000);
+  };
+  fb.onSnapshot(refNav, { includeMetadataChanges: true }, (snap) => avisoConexion(snap.metadata.fromCache, snap.metadata.hasPendingWrites), () => {});
+  addEventListener("offline", () => avisoConexion(true));
+
   // La tablet puede mostrar/ocultar un pizarrón y compartirlo con los celulares
   fb.onSnapshot(refNav, (snap) => {
     const p = snap.data()?.pizarron ?? null;
@@ -242,6 +258,7 @@ async function consola() {
   $app.innerHTML = `<div class="consola">
     <div class="barra">
       <span class="titulo"><a href="/presentaciones" title="Mis presentaciones">// estudio taller</a> · ${esc(pres.titulo)}</span>
+      <span class="conexion" id="conexion" hidden></span>
       <button class="btn sec-btn chico" id="ant">←</button><span class="pos" id="pos"></span><button class="btn sec-btn chico" id="sig">→</button>
       <button class="btn sec-btn chico" id="bidx">índice</button>
       <button class="btn sec-btn chico" id="bqr" title="Q">qr</button>

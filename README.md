@@ -40,6 +40,11 @@ Con **✎ editar contenido** activado:
 - **Temas:** Señal oscuro, Señal claro, Papel y Noche (en índice). Los colores se guardan por nombre (lima, fucsia…), así que al cambiar de tema todo se recolorea, también en las libres.
 - **.pptx:** exporta también las libres; las imágenes se descargan e incluyen si el sitio lo permite (si no, queda el enlace).
 
+## Antes del taller y con mala señal
+
+- **Preparar para el taller** (al final de «respuestas», `/admin`): descarga una copia de todas las respuestas, las borra, limpia los 4 pizarrones y vuelve a la primera diapositiva con las actividades cerradas. Cada paso se puede desmarcar. Para ensayar sin tocar la presentación real: «duplicar» en Mis presentaciones.
+- **Sin internet:** la app queda guardada en cada dispositivo (service worker, `public/sw.js`): con red siempre usa la versión nueva; sin red (o si tarda más de 4 s) usa la guardada. Firestore guarda localmente lo último conocido y deja en cola lo que se escribe, que se envía solo al volver la conexión. La consola sigue presentando (el proyector va por la misma compu) y muestra «● sin conexión»; los celulares muestran «sin señal · reconectando…» y avisan si una respuesta quedó en cola. Un celular que nunca se conectó necesita señal una vez para entrar; se conecta solo cuando vuelve.
+
 ## Deshacer y versiones
 
 - **↶ / ↷** (o **Ctrl+Z / Ctrl+Shift+Z**) en la consola deshacen y rehacen cualquier cambio de contenido: textos, slides agregadas o borradas, movimientos, bloques, actividades. Cada ráfaga de cambios es un paso; hasta 100 pasos por sesión.
