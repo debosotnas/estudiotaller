@@ -249,6 +249,11 @@ async function consola() {
     if (JSON.stringify(c) !== JSON.stringify(e.compartida)) { e.compartida = c; render(); }
   });
 
+  // Preguntas del público y sus votos (solo la consola cuenta los votos)
+  const qa = { preguntas: [], votos: [] };
+  fb.onSnapshot(fb.refPreguntasQA(sid), (qs) => { qa.preguntas = qs.docs.map((d) => ({ _id: d.id, ...d.data() })); render(); }, (err) => console.warn(err));
+  fb.onSnapshot(fb.refVotos(sid), (qs) => { qa.votos = qs.docs.map((d) => d.data()); render(); }, (err) => console.warn(err));
+
   fb.onSnapshot(fb.refRespuestas(sid), (qs) => {
     respuestas = qs.docs.map((d) => ({ _id: d.id, ...d.data() })).sort((a, b) => (a.ts?.toMillis?.() || 0) - (b.ts?.toMillis?.() || 0));
     render();
@@ -461,10 +466,10 @@ async function consola() {
       numero: numeroDe(diapos, s.id),
       total: vis().length,
       act,
-      res: act ? calcular(act, respuestas) : null,
+      res: act ? calcular(act, respuestas, qa) : null,
       revelar: !!e.revelar && !!act,
       muro,
-      contador: activa && e.abierta ? calcular(activa, respuestas).total : null,
+      contador: activa && e.abierta ? calcular(activa, respuestas, qa).total : null,
       overlay: e.pizarron ? "pizarron" : overlay,
       pizarron: e.pizarron ? { n: e.pizarron, ...pz[e.pizarron], palabras: pz[e.pizarron].palabrasVivo || pz[e.pizarron].palabras } : null,
       paso: s.pasos ? e.paso : null,
@@ -563,7 +568,7 @@ async function consola() {
     };
   }
   // ---- actividad de la diapositiva: votación, preguntas abiertas, clasificar o muro de respuestas ----
-  const TIPOS = [["", "ninguna"], ["votacion", "votación (elegir una opción)"], ["abiertas", "preguntas abiertas"], ["clasificar", "clasificar en columnas"]];
+  const TIPOS = [["", "ninguna"], ["votacion", "votación (elegir una opción)"], ["abiertas", "preguntas abiertas"], ["clasificar", "clasificar en columnas"], ["nube", "nube de palabras"], ["qa", "preguntas del público (con votos)"]];
   const textosDe = (arr) => (arr || []).map((x) => (typeof x === "string" ? x : x.texto || "")).filter(Boolean);
   function nuevaActividad(tipo, s) {
     const a = { id: "a" + nuevoId().slice(1), tipo, titulo: tituloDe(s).slice(0, 60) || "Actividad", diapositiva: s.id };
@@ -575,6 +580,8 @@ async function consola() {
       const propias = textosDe(s.plantilla === "qr" ? s.preguntas : s.items);
       Object.assign(a, propias.length ? { preguntas_de: s.id } : { preguntas: ["¿…?"] }, { anonimo: true });
     }
+    if (tipo === "nube") Object.assign(a, { pregunta: tituloDe(s) || "Una palabra que te venga a la mente", max: 3 });
+    if (tipo === "qa") Object.assign(a, { pregunta: "¿Qué te gustaría preguntar?", anonimo: true });
     if (tipo === "clasificar") {
       const items = textosDe(s.items);
       Object.assign(a, { items: items.length ? items : ["Ítem 1", "Ítem 2"], columnas: ["Columna 1", "Columna 2", "Columna 3", "Columna 4"], colores: ["lima", "fucsia", "celeste", "verde"], por_grupo: true });
@@ -600,6 +607,11 @@ async function consola() {
         : `<label class="ed-campo"><span class="rotulo">pregunta</span><input data-act="pregunta" value="${esc(r?.pregunta || "")}"></label>${lineas("opciones", "opciones", r?.opciones || [])}`;
       if (a.tipo === "abiertas") cuerpo += lineas("preguntas", "preguntas", r?.preguntas || [], origen("preguntas_de"))
         + `<label class="interruptor"><input type="checkbox" data-act-si="anonimo" ${a.anonimo ? "checked" : ""}> anónima (no guarda nombres)</label>`;
+      if (a.tipo === "nube") cuerpo += `<label class="ed-campo"><span class="rotulo">consigna <span class="sec">· la ven en el celular</span></span><input data-act="pregunta" value="${esc(a.pregunta || "")}"></label>
+        <label class="ed-campo"><span class="rotulo">palabras por persona</span><select data-act="max">${[1, 2, 3, 4, 5].map((n) => `<option ${n === (+a.max || 3) ? "selected" : ""}>${n}</option>`).join("")}</select></label>`;
+      if (a.tipo === "qa") cuerpo += `<label class="ed-campo"><span class="rotulo">consigna <span class="sec">· la ven en el celular</span></span><input data-act="pregunta" value="${esc(a.pregunta || "")}"></label>
+        <label class="interruptor"><input type="checkbox" data-act-si="anonimo" ${a.anonimo ? "checked" : ""}> anónimas (no guardan el nombre)</label>
+        <p class="sec ayuda">Cada persona puede enviar hasta 3 preguntas y votar las de los demás. Moderás desde el panel de abajo (⊘ ocultar, ✓ respondida).</p>`;
       if (a.tipo === "clasificar") cuerpo += lineas("items", "ítems para ubicar", r?.items || [], origen("items_de")) + lineas("columnas", "columnas", r?.columnas || [], origen("columnas_de"))
         + `<label class="interruptor"><input type="checkbox" data-act-si="por_grupo" ${a.por_grupo ? "checked" : ""}> responden por grupo (A–D)</label>`;
       cuerpo += `<label class="ed-campo"><span class="rotulo">mostrar resultados también en <span class="sec">· con R</span></span><select data-act="resultados"><option value="">— solo en esta —</option>${diapos.filter((x) => x.id !== s.id).map((x) => `<option value="${x.id}" ${(a.resultados_en || []).includes(x.id) ? "selected" : ""}>${numeroDe(diapos, x.id) ?? "oculta"} · ${esc(tituloDe(x).slice(0, 40))}</option>`).join("")}</select></label>`;
@@ -635,6 +647,7 @@ async function consola() {
       if (si) a[si] = el.checked;
       else if (k === "titulo") a.titulo = el.value;
       else if (k === "pregunta") { a.pregunta = el.value; }
+      else if (k === "max") a.max = +el.value;
       else if (k === "resultados") a.resultados_en = el.value ? [el.value] : [];
       else if (["opciones", "preguntas", "items", "columnas"].includes(k)) {
         a[k] = el.value.split("\n").filter((x) => x.trim());
@@ -1208,12 +1221,13 @@ async function consola() {
       if (c) c.onclick = () => { guardar({ abierta: false }); render(); };
       return;
     }
-    const res = calcular(a, respuestas);
+    const res = calcular(a, respuestas, qa);
     const abierta = e.actividad === a.id && e.abierta;
     const muro = muroDeDiapositiva(def, e.actual);
     const esDeEsta = actDeDiapositiva()?.id === a.id;
     let resumen = "";
     if (a.tipo === "votacion") resumen = a.opciones.map((o, i) => `${esc(o)}: <b>${res.conteos[i]}</b>`).join(" · ");
+    if (a.tipo === "nube") resumen = res.palabras.slice(0, 8).map((p) => `${esc(p.texto)} <b>${p.n}</b>`).join(" · ") || "sin palabras";
     if (a.tipo === "clasificar") {
       const g = {};
       respuestas.filter((r) => r.actividad === a.id).forEach((r) => (g[r.grupo || "?"] = (g[r.grupo || "?"] || 0) + 1));
@@ -1222,7 +1236,7 @@ async function consola() {
     $p.innerHTML = `<div class="info">
         <div class="rotulo">actividad · ${esc(a.tipo)}${a.anonimo ? " · anónima" : ""}</div>
         <div class="nombre">${esc(a.titulo)}</div>
-        <div><span class="punto ${abierta ? "on" : ""}"></span>${abierta ? "abierta" : "cerrada"} · <b class="lima">${res.total}</b> respuesta${res.total === 1 ? "" : "s"}</div>
+        <div><span class="punto ${abierta ? "on" : ""}"></span>${abierta ? "abierta" : "cerrada"} · <b class="lima">${res.total}</b> ${a.tipo === "qa" ? `pregunta${res.total === 1 ? "" : "s"} · ${qa.votos.filter((v) => v.actividad === a.id).length} votos` : `respuesta${res.total === 1 ? "" : "s"}`}</div>
         ${resumen ? `<div class="sec" style="font-size:14px">${resumen}</div>` : ""}
         <div class="botones">
           <button class="btn chico ${abierta ? "sec-btn" : ""}" id="abr">${abierta ? "cerrar (A)" : "abrir (A)"}</button>
@@ -1234,6 +1248,7 @@ async function consola() {
     document.getElementById("abr").onclick = alternarAbierta;
     const rv = document.getElementById("rev");
     if (rv) rv.onclick = () => tecla("r");
+    if (a.tipo === "qa") return panelPreguntas(a, res);
     if (a.tipo !== "abiertas") return;
 
     const $l = document.getElementById("lista");
@@ -1253,6 +1268,24 @@ async function consola() {
       guardar({ destacadas: d });
       render();
     }));
+  }
+
+  // Moderar preguntas del público: ocultar (no se muestra en ningún lado) o marcar respondida
+  function panelPreguntas(a, res) {
+    const $l = document.getElementById("lista");
+    $l.innerHTML = res.items.length ? res.items.map((x) => `<div class="resp qa ${x.oculta ? "oculta" : ""} ${x.respondida ? "dest" : ""}">
+        <span class="mono lima qa-votos">${x.votos}</span>
+        <span class="qa-t">${x.respondida ? "✓ " : ""}${esc(x.texto)}${x.nombre ? ` <span class="sec">— ${esc(x.nombre)}</span>` : ""}${x.oculta ? ` <span class="sec">(oculta)</span>` : ""}</span>
+        <button class="mini" data-resp="${x.id}" title="${x.respondida ? "marcar sin responder" : "marcar respondida"}">✓</button>
+        <button class="mini" data-ocul="${x.id}" title="${x.oculta ? "volver a mostrar" : "ocultar"}">${x.oculta ? "◎" : "⊘"}</button></div>`).join("")
+      : `<div class="sec">Todavía no hay preguntas.</div>`;
+    $l.onclick = (ev) => {
+      const b = ev.target.closest("[data-resp], [data-ocul]");
+      if (!b) return;
+      const id = b.dataset.resp || b.dataset.ocul, x = res.items.find((y) => y.id === id);
+      const cambio = b.dataset.resp ? { respondida: !x.respondida } : { oculta: !x.oculta };
+      fb.updateDoc(fb.doc(fb.refPreguntasQA(sid), id), cambio).catch((err) => toast(err.message));
+    };
   }
 
   // Abre la pantalla del proyector; con la API de ventanas de Chrome/Edge la ubica en el otro monitor

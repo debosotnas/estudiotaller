@@ -437,10 +437,44 @@ function panelResultados(sl, act, res) {
     });
   } else if (act.tipo === "clasificar") {
     matrizClasificar(sl, act, res, 2.45);
+  } else if (act.tipo === "nube") {
+    nube(sl, res);
+  } else if (act.tipo === "qa") {
+    rankingPreguntas(sl, res);
   } else {
     tb(sl, { x: M, y: 2.4, w: W, h: 2.4, size: 160, bold: true, color: "lima", valign: "bottom", lh: 1 }, String(res?.total ?? 0));
     tb(sl, { x: M, y: 4.9, w: W, h: 0.6, mono: true, size: 24, color: "texto_secundario" }, "respuestas recibidas");
   }
+}
+
+// Nube de palabras: tamaño según cuántas veces se repite
+function nube(sl, res) {
+  const ps = res?.palabras || [];
+  if (!ps.length) return tb(sl, { x: M, y: 2.4, w: W, h: 3.6, size: 32, color: "texto_secundario", align: "center", valign: "middle" }, "Todavía no hay palabras.");
+  const max = ps[0].n, min = ps.at(-1).n, colores = ["lima", "fucsia", "celeste", "verde", "texto"];
+  const tam = (n) => Math.round(26 + (max === min ? 0.6 : (n - min) / (max - min)) * 70);
+  // la más repetida en el medio; las demás alrededor
+  const orden = [];
+  ps.forEach((p, i) => (i % 2 ? orden.push(p) : orden.unshift(p)));
+  const html = orden.map((p) => `<span style="font-size:${tam(p.n) * PT}px;color:${col(colores[ps.indexOf(p) % colores.length])};font-weight:${p.n === max ? 700 : 500};line-height:1.05;white-space:nowrap" title="${p.n}">${esc(p.texto)}</span>`).join("");
+  const t = tb(sl, { x: M, y: 2.15, w: W, h: 4.25, size: 24, align: "center", valign: "middle" }, html);
+  Object.assign(t.firstElementChild.style, { display: "flex", flexWrap: "wrap", justifyContent: "center", alignItems: "center", gap: "12px 40px" });
+  tb(sl, { x: M, y: 6.42, w: 8, h: 0.35, mono: true, size: 14, color: "texto_secundario" }, `${res.total} participante${res.total === 1 ? "" : "s"} · ${ps.length} palabras distintas`);
+}
+
+// Preguntas del público ordenadas por votos (las ocultas no se muestran; las respondidas, atenuadas)
+function rankingPreguntas(sl, res) {
+  const items = (res?.items || []).filter((x) => !x.oculta);
+  if (!items.length) return tb(sl, { x: M, y: 2.4, w: W, h: 3.6, size: 32, color: "texto_secundario", align: "center", valign: "middle" }, "Todavía no hay preguntas.");
+  const max = Math.max(1, ...items.map((x) => x.votos)), vis = items.slice(0, 6), rh = 4.2 / 6;
+  vis.forEach((x, i) => {
+    const y = 2.15 + i * rh, c = x.respondida ? "texto_secundario" : i === 0 ? "lima" : "texto";
+    rect(sl, M, y, W, 0.012, "linea");
+    tb(sl, { x: M, y: y + 0.08, w: 1.1, h: rh - 0.12, size: 30, bold: true, mono: true, color: x.respondida ? "texto_secundario" : "lima", valign: "middle" }, `${x.votos}`);
+    rect(sl, M + 1.15, y + rh - 0.14, (W - 1.15) * (x.votos / max), 0.06, x.respondida ? "linea" : i === 0 ? "lima" : "texto_secundario");
+    tb(sl, { x: M + 1.15, y: y + 0.06, w: W - 1.15, h: rh - 0.2, size: 22, bold: !x.respondida, color: c, valign: "middle", lh: 1.15 }, `${x.respondida ? "✓ " : ""}${esc(x.texto)}`);
+  });
+  tb(sl, { x: M, y: 6.42, w: 9, h: 0.35, mono: true, size: 14, color: "texto_secundario" }, `${items.length} pregunta${items.length === 1 ? "" : "s"}${items.length > 6 ? ` · se muestran las 6 más votadas` : ""}`);
 }
 
 function pantallaQR(sl, ctx) {

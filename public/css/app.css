@@ -335,3 +335,17 @@ td.vacio { color: var(--linea); }
 .cr-dato.pasado, .cr-uso.pasado { color: #FF4D4D; font-weight: 700; }
 .fila-bloque input[data-bmin] { width: 64px; }
 .cr-uso { align-self: center; min-width: 48px; text-align: right; }
+
+/* nube y preguntas del público (celular) */
+.nube-mias { display: flex; flex-wrap: wrap; gap: 8px; }
+.qlista { display: flex; flex-direction: column; gap: 8px; }
+.qitem { display: flex; gap: 12px; align-items: flex-start; background: var(--superficie); padding: 10px 12px; }
+.qitem.respondida { opacity: .55; }
+.qvoto { flex: none; width: 44px; height: 44px; background: transparent; border: 2px solid var(--linea); font-size: 18px; color: var(--texto-secundario); }
+.qvoto.sel { background: var(--lima); border-color: var(--lima); color: var(--sobre-acento); }
+.qvoto:disabled { opacity: .35; }
+.qtexto { font-size: 16px; line-height: 1.4; padding-top: 10px; overflow-wrap: anywhere; }
+.resp.qa { align-items: center; }
+.resp.qa .qa-votos { min-width: 28px; text-align: right; font-size: 16px; }
+.resp.qa .qa-t { flex: 1; }
+.resp.qa.oculta { opacity: .45; }

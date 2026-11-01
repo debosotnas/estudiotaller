@@ -53,8 +53,9 @@ export function resolverActividades(def, diapos) {
     if (de("desde")) {
       const s = de("desde");
       a.pregunta = sinMarcas(s.pregunta || s.titulo || a.titulo);
-      a.opciones = textos(s.opciones);
+      if (a0.tipo === "votacion") a.opciones = textos(s.opciones);
     }
+    if (a0.pregunta && !de("desde")) a.pregunta = sinMarcas(a0.pregunta);
     if (de("items_de")) a.items = textos(de("items_de").items);
     if (de("columnas_de")) {
       const t = de("columnas_de").tarjetas || [];
@@ -80,8 +81,34 @@ export const actividadDeDiapositiva = (acts, id) =>
 
 export const muroDeDiapositiva = (def, id) => (def.muros || []).find((m) => m.diapositiva === id) || null;
 
-export function calcular(act, respuestas) {
+// Palabra normalizada para agrupar (sin mayúsculas, tildes ni signos)
+const claveDe = (t) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^\p{L}\p{N} ]/gu, "").replace(/\s+/g, " ").trim();
+
+// qa (preguntas del público): { preguntas: [{_id, texto, nombre, oculta, respondida, ts}], votos: [{q}] }
+export function calcular(act, respuestas, qa = null) {
+  if (act.tipo === "qa") {
+    const votos = {};
+    (qa?.votos || []).forEach((v) => (votos[v.q] = (votos[v.q] || 0) + 1));
+    const items = (qa?.preguntas || []).filter((p) => p.actividad === act.id)
+      .map((p) => ({ id: p._id, texto: p.texto, nombre: p.nombre || "", votos: votos[p._id] || 0, oculta: !!p.oculta, respondida: !!p.respondida, ts: p.ts?.toMillis?.() || 0 }))
+      .sort((a, b) => b.votos - a.votos || a.ts - b.ts);
+    return { total: items.length, items };
+  }
   const rs = respuestas.filter((r) => r.actividad === act.id);
+  if (act.tipo === "nube") {
+    const grupos = {};
+    rs.forEach((r) => Object.values(r.valores || {}).forEach((t) => {
+      const k = claveDe(String(t || ""));
+      if (!k) return;
+      const g = (grupos[k] ||= { n: 0, formas: {} });
+      g.n++;
+      const f = String(t).trim().toLowerCase();
+      g.formas[f] = (g.formas[f] || 0) + 1;
+    }));
+    const palabras = Object.values(grupos).map((g) => ({ texto: Object.entries(g.formas).sort((a, b) => b[1] - a[1])[0][0], n: g.n }))
+      .sort((a, b) => b.n - a.n).slice(0, 40);
+    return { total: rs.length, palabras };
+  }
   if (act.tipo === "votacion") {
     const conteos = act.opciones.map(() => 0);
     rs.forEach((r) => { if (Number.isInteger(r.valores?.opcion) && conteos[r.valores.opcion] != null) conteos[r.valores.opcion]++; });
@@ -106,6 +133,7 @@ export function calcular(act, respuestas) {
 }
 
 // Resultados sin textos ni nombres (lo que se puede mandar a los celulares)
-export const resultadosPublicos = (act, res) => (!res ? null : act.tipo === "abiertas" ? { total: res.total } : res);
+export const resultadosPublicos = (act, res) => (!res ? null : act.tipo === "abiertas" ? { total: res.total }
+  : act.tipo === "qa" ? { ...res, items: res.items.filter((x) => !x.oculta).map(({ nombre, ...x }) => x) } : res);
 
 export const claveDestacada = (respId, pregunta) => `${respId}#${pregunta}`;

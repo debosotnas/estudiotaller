@@ -64,6 +64,39 @@ service cloud.firestore {
           allow write: if puedeEditar(sid);
         }
       }
+      // preguntas del público: las ven todos; cada participante crea las suyas con la actividad abierta;
+      // quien edita las modera (ocultar / respondida)
+      match /preguntas/{q} {
+        function sesionQA() {
+          return get(/databases/$(database)/documents/estudiotaller/$(sid)).data;
+        }
+        allow read: if true;
+        allow create: if request.auth != null
+          && request.resource.data.keys().hasOnly(['uid', 'actividad', 'texto', 'nombre', 'ts'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.texto is string && request.resource.data.texto.size() > 0 && request.resource.data.texto.size() <= 200
+          && (request.resource.data.nombre == null || (request.resource.data.nombre is string && request.resource.data.nombre.size() <= 40))
+          && request.resource.data.ts == request.time
+          && sesionQA().abierta == true && sesionQA().actividad == request.resource.data.actividad;
+        allow update: if puedeEditar(sid)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['oculta', 'respondida']);
+        allow delete: if puedeEditar(sid) || (request.auth != null && resource.data.uid == request.auth.uid);
+      }
+      // votos: {pregunta}__{uid}; cada uno ve solo los suyos (la consola los cuenta)
+      match /votos/{v} {
+        function sesionV() {
+          return get(/databases/$(database)/documents/estudiotaller/$(sid)).data;
+        }
+        allow read: if puedeEditar(sid) || (request.auth != null && resource.data.uid == request.auth.uid);
+        allow create: if request.auth != null
+          && request.resource.data.keys().hasOnly(['q', 'uid', 'actividad', 'ts'])
+          && request.resource.data.uid == request.auth.uid
+          && v == request.resource.data.q + '__' + request.auth.uid
+          && request.resource.data.ts == request.time
+          && sesionV().abierta == true && sesionV().actividad == request.resource.data.actividad;
+        allow delete: if puedeEditar(sid) || (request.auth != null && resource.data.uid == request.auth.uid);
+      }
+
       // versiones guardadas del contenido: solo quienes editan
       match /versiones/{v} {
         allow read, write: if puedeEditar(sid);

@@ -73,5 +73,8 @@ export const refVivo = (sid, n) => doc(db, RAIZ, sid, "pizarron_vivo", String(n)
 export const consultaTrazos = (sid, n) => query(refTrazos(sid, n), orderBy("o"));
 // Versiones guardadas del contenido (para volver atrás)
 export const refVersiones = (sid) => collection(db, RAIZ, sid, "versiones");
+// Preguntas del público (las ven todos) y sus votos (uno por persona y pregunta: {pregunta}__{uid})
+export const refPreguntasQA = (sid) => collection(db, RAIZ, sid, "preguntas");
+export const refVotos = (sid) => collection(db, RAIZ, sid, "votos");
 
 export { onAuthStateChanged, doc, collection, setDoc, updateDoc, getDoc, deleteDoc, onSnapshot, query, where, orderBy, limit, serverTimestamp, writeBatch, getDocs };

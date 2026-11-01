@@ -140,7 +140,7 @@ async function iniciar() {
     if (prompt(`Esto borra «${p.titulo}» con sus respuestas y pizarrones, y no se puede deshacer.\nEscribí BORRAR para confirmar.`) !== "BORRAR") return;
     const borrarTodos = async (refs) => { for (let i = 0; i < refs.length; i += 400) { const b = fb.writeBatch(fb.db); refs.slice(i, i + 400).forEach((r) => b.delete(r)); await b.commit(); } };
     const docsDe = async (col) => (await fb.getDocs(col)).docs.map((d) => d.ref);
-    const refs = [...(await docsDe(fb.refRespuestas(p.sid)))];
+    const refs = [...(await docsDe(fb.refRespuestas(p.sid))), ...(await docsDe(fb.refPreguntasQA(p.sid))), ...(await docsDe(fb.refVotos(p.sid))), ...(await docsDe(fb.refVersiones(p.sid)))];
     for (const k of [1, 2, 3, 4]) refs.push(...(await docsDe(fb.refTrazos(p.sid, k))), fb.refPizarron(p.sid, k), fb.refVivo(p.sid, k));
     refs.push(fb.refContenido(p.sid), fb.refNav(p.sid), fb.refSesion(p.sid));
     await borrarTodos(refs);

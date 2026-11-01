@@ -34,6 +34,8 @@ function login() {
 function columnas(a) {
   if (a.tipo === "votacion") return [{ titulo: a.pregunta, valor: (r) => a.opciones[r.valores?.opcion] ?? "" }];
   if (a.tipo === "clasificar") return a.items.map((it, i) => ({ titulo: it, valor: (r) => (r.valores?.[i] != null ? `${+r.valores[i] + 1} · ${a.columnas[r.valores[i]]}` : "") }));
+  if (a.tipo === "nube") return Array.from({ length: +a.max || 3 }, (_, i) => ({ titulo: `palabra ${i + 1}`, valor: (r) => r.valores?.[i] || "" }));
+  if (a.tipo === "qa") return [{ titulo: a.pregunta || "pregunta", valor: (r) => r.valores.texto }, { titulo: "votos", valor: (r) => String(r.valores.votos) }, { titulo: "estado", valor: (r) => r.valores.estado }];
   return a.preguntas.map((p, i) => ({ titulo: sinMarcas(p), valor: (r) => r.valores?.[i] || "" }));
 }
 const fecha = (r) => (r.ts?.toDate ? r.ts.toDate().toLocaleString("es") : "");
@@ -42,7 +44,8 @@ function iniciar() {
   avisoVersion();
   let respuestas = [];
   let sesion = {};
-  let sel = acts[0].id;
+  let sel = acts[0]?.id;
+  if (!sel) { $app.innerHTML = `<div class="admin"><h1>${esc(pres.titulo)}</h1><p class="sec">Esta presentación todavía no tiene actividades. Se agregan desde la consola: ✎ editar contenido → «actividad en esta diapositiva».</p><p><a href="/presentar?s=${encodeURIComponent(sid)}">ir a la consola</a></p></div>`; return; }
 
   $app.innerHTML = `<div class="admin">
     <header>
@@ -90,10 +93,19 @@ function iniciar() {
   document.getElementById("copiar-url").onclick = () => copiar(joinUrl, "Enlace copiado");
   document.getElementById("bajar-qr").onclick = () => bajar(`qr-${sid}.svg`, qrSvg(joinUrl).replace("<svg ", '<svg style="background:#fff" '), "image/svg+xml");
 
-  fb.onSnapshot(fb.refRespuestas(sid), (qs) => {
-    respuestas = qs.docs.map((d) => ({ _id: d.id, ...d.data() })).sort((a, b) => (a.ts?.toMillis?.() || 0) - (b.ts?.toMillis?.() || 0));
+  // Respuestas + preguntas del público (cada pregunta, con sus votos, se muestra como una fila más)
+  let reales = [], preguntasQA = [], votosQA = [];
+  const recomponer = () => {
+    const votos = {};
+    votosQA.forEach((v) => (votos[v.q] = (votos[v.q] || 0) + 1));
+    respuestas = reales.concat(preguntasQA.map((p) => ({ _id: `qa:${p._id}`, _qa: p._id, uid: p.uid || "", actividad: p.actividad, nombre: p.nombre, ts: p.ts,
+      valores: { texto: p.texto, votos: votos[p._id] || 0, estado: p.oculta ? "oculta" : p.respondida ? "respondida" : "" } })))
+      .sort((a, b) => (a.ts?.toMillis?.() || 0) - (b.ts?.toMillis?.() || 0));
     pintar();
-  }, (e) => toast("Error: " + e.message));
+  };
+  fb.onSnapshot(fb.refRespuestas(sid), (qs) => { reales = qs.docs.map((d) => ({ _id: d.id, ...d.data() })); recomponer(); }, (e) => toast("Error: " + e.message));
+  fb.onSnapshot(fb.refPreguntasQA(sid), (qs) => { preguntasQA = qs.docs.map((d) => ({ _id: d.id, ...d.data() })); recomponer(); }, (e) => console.warn(e));
+  fb.onSnapshot(fb.refVotos(sid), (qs) => { votosQA = qs.docs.map((d) => d.data()); recomponer(); }, (e) => console.warn(e));
   let nav = {};
   fb.onSnapshot(fb.refSesion(sid), (s) => { sesion = s.data() || {}; pintarSesion(); });
   fb.onSnapshot(fb.refNav(sid), (s) => { nav = s.data() || {}; pintarSesion(); });
@@ -149,7 +161,7 @@ function iniciar() {
     try {
       if (q("p-copia") && respuestas.length) bajar(`${sid}-respuestas-${new Date().toISOString().slice(0, 16).replace(/[:T]/g, "-")}.csv`, aCSV(filasLargas()), "text/csv");
       const refs = [];
-      if (q("p-resp")) refs.push(...(await fb.getDocs(fb.refRespuestas(sid))).docs.map((d) => d.ref));
+      if (q("p-resp")) for (const c of [fb.refRespuestas(sid), fb.refPreguntasQA(sid), fb.refVotos(sid)]) refs.push(...(await fb.getDocs(c)).docs.map((d) => d.ref));
       if (q("p-pz")) for (const k of [1, 2, 3, 4]) refs.push(...(await fb.getDocs(fb.refTrazos(sid, k))).docs.map((d) => d.ref), fb.refPizarron(sid, k), fb.refVivo(sid, k));
       for (let i = 0; i < refs.length; i += 400) { const wb = fb.writeBatch(fb.db); refs.slice(i, i + 400).forEach((r) => wb.delete(r)); await wb.commit(); }
       if (q("p-ses")) await Promise.all([
@@ -176,7 +188,11 @@ function iniciar() {
   async function borrar(rs) {
     for (let i = 0; i < rs.length; i += 400) {
       const b = fb.writeBatch(fb.db);
-      rs.slice(i, i + 400).forEach((r) => b.delete(fb.doc(fb.db, fb.RAIZ, sid, "respuestas", r._id)));
+      rs.slice(i, i + 400).forEach((r) => {
+        if (!r._qa) return b.delete(fb.doc(fb.db, fb.RAIZ, sid, "respuestas", r._id));
+        b.delete(fb.doc(fb.refPreguntasQA(sid), r._qa)); // pregunta del público y sus votos
+        votosQA.filter((v) => v.q === r._qa).forEach((v) => b.delete(fb.doc(fb.refVotos(sid), `${v.q}__${v.uid}`)));
+      });
       await b.commit();
     }
   }

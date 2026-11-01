@@ -3,7 +3,7 @@ import { cargarTaller, renderSlide, montar, encajar, esc } from "./slides.js";
 import { vigilarVersion } from "./version.js";
 import { codigoSesion, urlParticipante, resolverActividades, actividadPorId } from "./actividades.js";
 import { cargarPresentacion, armarPresentacion, TALLER } from "./presentacion.js";
-import { entrarAnonimo, refSesion, refRespuesta, refContenido, leerContenido, refPizarron, consultaTrazos, onSnapshot, setDoc, getDoc, serverTimestamp } from "./firebase.js";
+import { entrarAnonimo, refSesion, refRespuesta, refContenido, leerContenido, refPizarron, consultaTrazos, refPreguntasQA, refVotos, onSnapshot, setDoc, getDoc, deleteDoc, doc, query, where, serverTimestamp } from "./firebase.js";
 
 const $app = document.getElementById("app");
 const $quien = document.getElementById("quien");
@@ -32,6 +32,7 @@ let nombre = ls.get("et_nombre") || "";
 let vista = null; // clave de lo que se está mostrando, para no pisar lo que el usuario escribe
 let estado = {};
 let escuchando = false;
+let pararQA = null; // deja de escuchar las preguntas del público
 
 const franja = `<div class="franja">${["lima", "fucsia", "celeste", "verde"].map((c) => `<i style="background:var(--${c})"></i>`).join("")}</div>`;
 const quien = () => (nombre ? nombre : "sin nombre");
@@ -174,10 +175,12 @@ addEventListener("orientationchange", () => setTimeout(ajustarGrande, 200));
 // ---------- actividades ----------
 function render() {
   const act = estado.abierta ? actividadPorId(acts, estado.actividad) : null;
-  const clave = act ? `act:${act.id}:${JSON.stringify([act.preguntas, act.opciones, act.items, act.columnas])}` : "espera";
+  const clave = act ? `act:${act.id}:${JSON.stringify([act.tipo, act.pregunta, act.max, act.preguntas, act.opciones, act.items, act.columnas])}` : "espera";
   if (clave === vista) return;
   const anterior = vista;
   vista = clave;
+  pararQA?.(); // deja de escuchar las preguntas del público si se cambia de actividad
+  pararQA = null;
   if (!act) return esperando(anterior && anterior.startsWith("act:"));
   mostrarActividad(act);
 }
@@ -208,6 +211,8 @@ async function mostrarActividad(act) {
   if (vista !== clave) return; // cambió mientras cargaba
   if (act.tipo === "votacion") return votacion(act, previa);
   if (act.tipo === "clasificar") return clasificar(act, previa, false);
+  if (act.tipo === "nube") return nube(act, previa, false);
+  if (act.tipo === "qa") return preguntasPublico(act);
   return abiertas(act, previa, false);
 }
 
@@ -359,5 +364,93 @@ function clasificar(act, previa, editando) {
       await guardar(act, valores, grupo);
       clasificar(act, { grupo, valores }, false);
     } catch (err) { e.target.disabled = false; errorGuardar(err); }
+  };
+}
+
+// ---------- nube de palabras: hasta 3 palabras o frases cortas ----------
+function nube(act, previa, editando) {
+  const max = Math.min(5, Math.max(1, +act.max || 3));
+  const valores = previa?.valores || {};
+  if (previa && !editando) {
+    pintar(`${cabecera(act)}
+      <div class="estado-ok">¡Enviado! ✓</div>
+      <p class="nube-mias">${Object.values(valores).filter(Boolean).map((t) => `<span class="etq sec-etq">${esc(t)}</span>`).join(" ")}</p>
+      <div class="acciones"><button class="btn sec-btn" id="editar">cambiar mis palabras</button></div>${franja}`);
+    document.getElementById("editar").onclick = () => nube(act, previa, true);
+    return;
+  }
+  pintar(`${cabecera(act)}
+    <p class="sec">Escribí ${max === 1 ? "una palabra" : `hasta ${max} palabras`} (o frases muy cortas). Las más repetidas se verán más grandes.</p>
+    <form id="f" style="margin-top:16px">
+      ${Array.from({ length: max }, (_, i) => `<div class="campo"><input id="w${i}" maxlength="30" autocomplete="off" enterkeyhint="${i < max - 1 ? "next" : "send"}" value="${esc(valores[i] || "")}" placeholder="palabra ${i + 1}"></div>`).join("")}
+      <div id="msg"></div>
+      <div class="acciones"><button class="btn" type="submit">enviar →</button></div>
+    </form>${franja}`);
+  const f = document.getElementById("f");
+  f.onsubmit = async (e) => {
+    e.preventDefault();
+    const v = Object.fromEntries(Array.from({ length: max }, (_, i) => [i, document.getElementById(`w${i}`).value.trim().slice(0, 30)]).filter(([, t]) => t));
+    if (!Object.keys(v).length) { document.getElementById("msg").innerHTML = `<div class="estado-err">Escribí al menos una palabra.</div>`; return; }
+    const btn = f.querySelector("button[type=submit]");
+    btn.disabled = true;
+    try { await guardar(act, v); nube(act, { valores: v }, false); }
+    catch (err) { btn.disabled = false; errorGuardar(err); }
+  };
+}
+
+// ---------- preguntas del público: escribir (hasta 3) y votar las de los demás ----------
+function preguntasPublico(act) {
+  let preguntas = [], misVotos = new Set();
+  pintar(`${cabecera(act)}
+    <p class="sec">Escribí tu pregunta. También podés votar (▲) las de los demás: las más votadas se responden primero.${act.anonimo ? " Las preguntas son anónimas." : ""}</p>
+    <form id="f" style="margin-top:12px">
+      <div class="campo"><textarea id="qtexto" maxlength="200" placeholder="Tu pregunta…"></textarea></div>
+      <div id="msg"></div>
+      <div class="acciones"><button class="btn" type="submit">enviar pregunta →</button></div>
+    </form>
+    <h2>Preguntas <span class="sec" id="qn"></span></h2>
+    <div id="qlista" class="qlista"><p class="sec">cargando…</p></div>${franja}`);
+  const lista = () => {
+    const $l = document.getElementById("qlista");
+    if (!$l) return;
+    const vis = preguntas.filter((p) => !p.oculta).sort((a, b) => (b.ts?.toMillis?.() || Infinity) - (a.ts?.toMillis?.() || Infinity));
+    document.getElementById("qn").textContent = vis.length ? `(${vis.length})` : "";
+    $l.innerHTML = vis.length ? vis.map((p) => {
+      const mia = p.uid === user.uid, votada = misVotos.has(p._id);
+      return `<div class="qitem ${p.respondida ? "respondida" : ""}">
+        <button class="qvoto ${votada ? "sel" : ""}" data-q="${p._id}" ${mia || p.respondida ? "disabled" : ""} aria-label="votar">▲</button>
+        <div class="qtexto">${p.respondida ? "✓ " : ""}${esc(p.texto)}${mia ? ` <span class="etq sec-etq">tuya</span>` : ""}</div></div>`;
+    }).join("") : `<p class="sec">Todavía no hay preguntas. ¡Animate a hacer la primera!</p>`;
+    $l.querySelectorAll(".qvoto:not([disabled])").forEach((b) => (b.onclick = async () => {
+      const q = b.dataset.q, ref = doc(refVotos(sid), `${q}__${user.uid}`), ya = misVotos.has(q);
+      ya ? misVotos.delete(q) : misVotos.add(q);
+      lista();
+      try {
+        if (ya) await deleteDoc(ref);
+        else await setDoc(ref, { q, uid: user.uid, actividad: act.id, ts: serverTimestamp() });
+      } catch (err) { ya ? misVotos.add(q) : misVotos.delete(q); lista(); errorGuardar(err); }
+    }));
+  };
+  const parar = [
+    onSnapshot(query(refPreguntasQA(sid), where("actividad", "==", act.id)), (qs) => { preguntas = qs.docs.map((d) => ({ _id: d.id, ...d.data() })); lista(); }, (e) => console.warn(e)),
+    onSnapshot(query(refVotos(sid), where("uid", "==", user.uid), where("actividad", "==", act.id)), (qs) => { misVotos = new Set(qs.docs.map((d) => d.data().q)); lista(); }, (e) => console.warn(e)),
+  ];
+  pararQA = () => parar.forEach((f) => f());
+  const f = document.getElementById("f");
+  f.onsubmit = async (e) => {
+    e.preventDefault();
+    const $t = document.getElementById("qtexto"), texto = $t.value.trim().slice(0, 200), msg = document.getElementById("msg");
+    if (!texto) { msg.innerHTML = `<div class="estado-err">Escribí tu pregunta.</div>`; return; }
+    if (preguntas.filter((p) => p.uid === user.uid).length >= 3) { msg.innerHTML = `<div class="estado-err">Ya enviaste 3 preguntas: votá las de los demás.</div>`; return; }
+    const btn = f.querySelector("button[type=submit]");
+    btn.disabled = true;
+    const aviso = setTimeout(() => (msg.innerHTML = `<div class="estado-err">Sin señal: tu pregunta se va a enviar sola cuando vuelva la conexión.</div>`), 3000);
+    try {
+      await setDoc(doc(refPreguntasQA(sid)), { uid: user.uid, actividad: act.id, texto, nombre: act.anonimo ? null : nombre || null, ts: serverTimestamp() });
+      $t.value = "";
+      msg.innerHTML = `<div class="estado-ok">¡Pregunta enviada! ✓</div>`;
+    } catch (err) { errorGuardar(err); }
+    clearTimeout(aviso);
+    btn.disabled = false;
   };
 }
