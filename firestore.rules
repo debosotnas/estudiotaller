@@ -125,7 +125,21 @@ service cloud.firestore {
             && (d.nombre == null || (d.nombre is string && d.nombre.size() <= 40))
             && (d.grupo == null || d.grupo in ['A', 'B', 'C', 'D'])
             && sesion().abierta == true
-            && sesion().actividad == d.actividad;
+            && sesion().actividad == d.actividad
+            && quizOk(d);
+        }
+        // Quiz: solo la pregunta en curso, una vez, con la hora del servidor (para el puntaje por rapidez)
+        function quizOk(d) {
+          let q = sesion().get('quiz', null);
+          let i = q == null ? '' : string(q.i);
+          let antes = resource == null ? {} : resource.data.valores;
+          return q == null || q.actividad != d.actividad || (
+            q.estado == 'pregunta'
+            && d.valores.diff(antes).affectedKeys().hasOnly([i, 't' + i])
+            && !(i in antes)
+            && d.valores[i] is int
+            && d.valores['t' + i] == request.time
+          );
         }
         allow get: if puedeEditar(sid) || propia();
         allow list, delete: if puedeEditar(sid);

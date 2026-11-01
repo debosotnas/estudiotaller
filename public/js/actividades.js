@@ -84,8 +84,30 @@ export const muroDeDiapositiva = (def, id) => (def.muros || []).find((m) => m.di
 // Palabra normalizada para agrupar (sin mayúsculas, tildes ni signos)
 const claveDe = (t) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^\p{L}\p{N} ]/gu, "").replace(/\s+/g, " ").trim();
 
+// ---------- quiz ----------
+const ms = (t) => (t?.toMillis ? t.toMillis() : typeof t === "number" ? t : null);
+// Puntos de una respuesta: correcta = de 1000 (al instante) a 500 (al final del tiempo); fuera de tiempo o incorrecta = 0
+export function puntosQuiz(act, quiz, r, i) {
+  const q = act.quiz?.[i], correcta = quiz?.correctas?.[i];
+  if (!q || correcta == null || r?.valores?.[i] !== correcta) return 0;
+  const t = ms(r.valores["t" + i]), t0 = ms(quiz.inicios?.[i]);
+  if (t == null || t0 == null) return 0;
+  const lim = (+q.segundos || 20) * 1000, d = Math.max(0, t - t0);
+  return d > lim + 1500 ? 0 : Math.round(1000 - 500 * Math.min(1, d / lim));
+}
+export const nombreQuiz = (r) => (r.nombre ? r.nombre : `anónimo ${String(r.uid || "").slice(0, 4)}`);
+
 // qa (preguntas del público): { preguntas: [{_id, texto, nombre, oculta, respondida, ts}], votos: [{q}] }
-export function calcular(act, respuestas, qa = null) {
+// quiz: estado del quiz en la sesión ({ actividad, i, estado, inicios, correctas })
+export function calcular(act, respuestas, qa = null, quiz = null) {
+  if (act.tipo === "quiz") {
+    const rs = respuestas.filter((r) => r.actividad === act.id);
+    const i = quiz?.actividad === act.id ? quiz.i : -1;
+    const conteos = (act.quiz?.[i]?.opciones || []).map((_, j) => rs.filter((r) => r.valores?.[i] === j).length);
+    const ranking = rs.map((r) => ({ uid: r.uid, nombre: nombreQuiz(r), puntos: (act.quiz || []).reduce((a, _, k) => a + puntosQuiz(act, quiz, r, k), 0) }))
+      .sort((a, b) => b.puntos - a.puntos || a.nombre.localeCompare(b.nombre));
+    return { total: rs.length, conteos, respondieron: conteos.reduce((a, b) => a + b, 0), ranking };
+  }
   if (act.tipo === "qa") {
     const votos = {};
     (qa?.votos || []).forEach((v) => (votos[v.q] = (votos[v.q] || 0) + 1));

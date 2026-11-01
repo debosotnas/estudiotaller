@@ -103,7 +103,7 @@ async function consola() {
   const [snap, snapNav] = await Promise.all([fb.getDoc(ref), fb.getDoc(refNav)]);
   const ses = snap.data() || {}, nav = snapNav.data() || {};
   let e = {
-    actividad: ses.actividad ?? null, abierta: !!ses.abierta, compartida: ses.compartida ?? null,
+    actividad: ses.actividad ?? null, abierta: !!ses.abierta, compartida: ses.compartida ?? null, quiz: ses.quiz ?? null,
     actual: nav.actual ?? null, paso: nav.paso ?? 0, revelar: !!nav.revelar, destacadas: nav.destacadas ?? [], pizarron: nav.pizarron ?? null,
   };
   if (!porId(e.actual)) e.actual = (vis()[0] || diapos[0]).id;
@@ -247,6 +247,8 @@ async function consola() {
   fb.onSnapshot(ref, (snap) => {
     const c = snap.data()?.compartida ?? null;
     if (JSON.stringify(c) !== JSON.stringify(e.compartida)) { e.compartida = c; render(); }
+    const q = snap.data()?.quiz ?? null;
+    if (q && !snap.metadata.hasPendingWrites) { e.quiz = q; render(); } // trae las horas de inicio reales del servidor
   });
 
   // Preguntas del público y sus votos (solo la consola cuenta los votos)
@@ -380,6 +382,8 @@ async function consola() {
   function siguiente() {
     if (e.pizarron) { guardar({ pizarron: null }); return render(); }
     if (overlay) { overlay = null; return render(); }
+    const aq = quizEnPantalla();
+    if (aq && e.quiz.estado !== "fin") return avanzarQuiz(aq);
     const s = porId(e.actual);
     if (s.pasos && e.paso < pasosDe(s) && !e.revelar) return (guardar({ paso: e.paso + 1 }), render());
     irA(vecino(+1), 0);
@@ -387,6 +391,8 @@ async function consola() {
   function anterior() {
     if (e.pizarron) { guardar({ pizarron: null }); return render(); }
     if (overlay) { overlay = null; return render(); }
+    const aq = quizEnPantalla();
+    if (aq && !["intro", "fin"].includes(e.quiz.estado)) return toast("El quiz avanza con →. Para salir, usá el índice (o reiniciá el quiz en el panel).");
     const s = porId(e.actual);
     if (s.pasos && e.paso > 0 && !e.revelar) return (guardar({ paso: e.paso - 1 }), render());
     const id = vecino(-1);
@@ -397,6 +403,7 @@ async function consola() {
     const campos = { actual: id, paso, revelar: false, pizarron: null };
     const abre = actividadQueAbre(acts, id);
     if (abre && abre.id !== e.actividad) Object.assign(campos, { actividad: abre.id, abierta: true });
+    if (abre?.tipo === "quiz" && e.quiz?.actividad !== abre.id) campos.quiz = quizNuevo(abre);
     overlay = null;
     tabPregunta = null;
     guardar(campos);
@@ -416,6 +423,54 @@ async function consola() {
     else guardar({ actividad: a.id, abierta: true });
     render();
   }
+
+  // ---- quiz (tipo Kahoot): intro → pregunta → resultado → ranking → … → fin, avanzando con → ----
+  let quizLocal = { i: -1, desde: 0 }; // cuándo arrancó la pregunta en esta compu (para la cuenta regresiva)
+  const quizNuevo = (a) => ({ actividad: a.id, i: -1, estado: "intro", inicios: {}, correctas: {} });
+  function quizEnPantalla() {
+    const a = actDeDiapositiva();
+    return a?.tipo === "quiz" && e.quiz?.actividad === a.id && !e.pizarron && !overlay ? a : null;
+  }
+  function restanteQuiz(a) {
+    const q = e.quiz, seg = +a.quiz?.[q.i]?.segundos || 20;
+    const desde = quizLocal.i === q.i ? quizLocal.desde : q.inicios?.[q.i]?.toMillis?.() ?? Date.now();
+    return Math.max(0, seg - Math.floor((Date.now() - desde) / 1000));
+  }
+  function vistaQuiz(a) {
+    const q = e.quiz, p = a.quiz?.[q.i] || {}, res = calcular(a, respuestas, qa, q);
+    return {
+      estado: q.estado, i: q.i, n: (a.quiz || []).length, titulo: a.titulo,
+      pregunta: p.pregunta || "", opciones: p.opciones || [], correcta: q.correctas?.[q.i],
+      conteos: res.conteos, respondieron: res.respondieron, restante: q.estado === "pregunta" ? restanteQuiz(a) : 0,
+      ranking: res.ranking.map(({ nombre, puntos }) => ({ nombre, puntos })),
+    };
+  }
+  function avanzarQuiz(a) {
+    const q = e.quiz, n = (a.quiz || []).length;
+    if (!n) return toast("Este quiz no tiene preguntas: agregalas en ✎ editar contenido.");
+    if (!(e.actividad === a.id && e.abierta)) guardar({ actividad: a.id, abierta: true });
+    if (q.estado === "intro" || q.estado === "ranking") return pasoQuiz(a, "pregunta", q.estado === "intro" ? 0 : q.i + 1);
+    if (q.estado === "pregunta") return pasoQuiz(a, "resultado", q.i);
+    if (q.estado === "resultado") return pasoQuiz(a, q.i >= n - 1 ? "fin" : "ranking", q.i);
+  }
+  function pasoQuiz(a, estado, i) {
+    const cambios = { "quiz.estado": estado, "quiz.i": i, actualizado: fb.serverTimestamp() };
+    e.quiz = { ...e.quiz, estado, i, inicios: { ...e.quiz.inicios }, correctas: { ...e.quiz.correctas } };
+    if (estado === "pregunta") { cambios[`quiz.inicios.${i}`] = fb.serverTimestamp(); quizLocal = { i, desde: Date.now() }; }
+    if (estado === "resultado") { const c = +a.quiz[i].correcta || 0; cambios[`quiz.correctas.${i}`] = c; e.quiz.correctas[i] = c; }
+    fb.updateDoc(ref, cambios).catch((err) => toast("No se pudo avanzar el quiz: " + err.message));
+    render();
+  }
+  async function reiniciarQuiz(a) {
+    if (!confirm(`¿Reiniciar «${a.titulo}»? Se borran sus respuestas y vuelve a la presentación del quiz.`)) return;
+    const b = fb.writeBatch(fb.db);
+    respuestas.filter((r) => r.actividad === a.id).forEach((r) => b.delete(fb.doc(fb.refRespuestas(sid), r._id)));
+    await b.commit();
+    guardar({ quiz: quizNuevo(a), actividad: a.id, abierta: true });
+    render();
+  }
+  // cuenta regresiva: mientras hay una pregunta en curso, se redibuja la pantalla (sin tocar Firestore)
+  setInterval(() => { if (e.quiz?.estado === "pregunta" && quizEnPantalla()) { const v = vista(); difundir(v); if (!enLugar) escenario(v); } }, 500);
 
   // ---- compartir la vista actual en los celulares ----
   const vistaPublica = (v) => {
@@ -466,10 +521,11 @@ async function consola() {
       numero: numeroDe(diapos, s.id),
       total: vis().length,
       act,
-      res: act ? calcular(act, respuestas, qa) : null,
+      res: act ? calcular(act, respuestas, qa, e.quiz) : null,
       revelar: !!e.revelar && !!act,
       muro,
-      contador: activa && e.abierta ? calcular(activa, respuestas, qa).total : null,
+      contador: activa && e.abierta && activa.tipo !== "quiz" ? calcular(activa, respuestas, qa).total : null,
+      quiz: act?.tipo === "quiz" && e.quiz?.actividad === act.id ? vistaQuiz(act) : null,
       overlay: e.pizarron ? "pizarron" : overlay,
       pizarron: e.pizarron ? { n: e.pizarron, ...pz[e.pizarron], palabras: pz[e.pizarron].palabrasVivo || pz[e.pizarron].palabras } : null,
       paso: s.pasos ? e.paso : null,
@@ -568,7 +624,7 @@ async function consola() {
     };
   }
   // ---- actividad de la diapositiva: votación, preguntas abiertas, clasificar o muro de respuestas ----
-  const TIPOS = [["", "ninguna"], ["votacion", "votación (elegir una opción)"], ["abiertas", "preguntas abiertas"], ["clasificar", "clasificar en columnas"], ["nube", "nube de palabras"], ["qa", "preguntas del público (con votos)"]];
+  const TIPOS = [["", "ninguna"], ["votacion", "votación (elegir una opción)"], ["abiertas", "preguntas abiertas"], ["clasificar", "clasificar en columnas"], ["nube", "nube de palabras"], ["qa", "preguntas del público (con votos)"], ["quiz", "quiz con tiempo y puntaje"]];
   const textosDe = (arr) => (arr || []).map((x) => (typeof x === "string" ? x : x.texto || "")).filter(Boolean);
   function nuevaActividad(tipo, s) {
     const a = { id: "a" + nuevoId().slice(1), tipo, titulo: tituloDe(s).slice(0, 60) || "Actividad", diapositiva: s.id };
@@ -580,6 +636,7 @@ async function consola() {
       const propias = textosDe(s.plantilla === "qr" ? s.preguntas : s.items);
       Object.assign(a, propias.length ? { preguntas_de: s.id } : { preguntas: ["¿…?"] }, { anonimo: true });
     }
+    if (tipo === "quiz") Object.assign(a, { anonimo: false, quiz: [{ pregunta: tituloDe(s) || "¿Primera pregunta?", opciones: ["Opción A", "Opción B", "Opción C", "Opción D"], correcta: 0, segundos: 20 }] });
     if (tipo === "nube") Object.assign(a, { pregunta: tituloDe(s) || "Una palabra que te venga a la mente", max: 3 });
     if (tipo === "qa") Object.assign(a, { pregunta: "¿Qué te gustaría preguntar?", anonimo: true });
     if (tipo === "clasificar") {
@@ -607,6 +664,13 @@ async function consola() {
         : `<label class="ed-campo"><span class="rotulo">pregunta</span><input data-act="pregunta" value="${esc(r?.pregunta || "")}"></label>${lineas("opciones", "opciones", r?.opciones || [])}`;
       if (a.tipo === "abiertas") cuerpo += lineas("preguntas", "preguntas", r?.preguntas || [], origen("preguntas_de"))
         + `<label class="interruptor"><input type="checkbox" data-act-si="anonimo" ${a.anonimo ? "checked" : ""}> anónima (no guarda nombres)</label>`;
+      if (a.tipo === "quiz") cuerpo += (a.quiz || []).map((q, qi) => `<div class="ed-item"><div class="ed-item-cab"><span class="mono lima">pregunta ${qi + 1}</span><button class="btn peligro chico" data-qquitar="${qi}">quitar</button></div>
+          <label class="ed-campo"><span class="rotulo">pregunta</span><input data-q="${qi}" data-qk="pregunta" value="${esc(q.pregunta || "")}"></label>
+          <label class="ed-campo"><span class="rotulo">opciones <span class="sec">· de 2 a 4, una por línea</span></span><textarea rows="4" data-q="${qi}" data-qk="opciones">${esc((q.opciones || []).join("\n"))}</textarea></label>
+          <div class="fila-num"><label class="ed-campo"><span class="rotulo">correcta</span><select data-q="${qi}" data-qk="correcta">${(q.opciones || []).map((o, j) => `<option value="${j}" ${j === +q.correcta ? "selected" : ""}>${"▲◆●■"[j]} ${esc(o.slice(0, 18))}</option>`).join("")}</select></label>
+          <label class="ed-campo mini-campo"><span class="rotulo">segundos</span><input type="number" min="5" max="120" data-q="${qi}" data-qk="segundos" value="${+q.segundos || 20}"></label></div></div>`).join("")
+        + `${(a.quiz || []).length < 10 ? `<button class="btn sec-btn chico" data-qagregar>+ pregunta</button>` : `<p class="sec">Máximo 10 preguntas.</p>`}
+        <p class="sec ayuda">En la diapositiva, cada → avanza: presentación (con QR) → pregunta → respuesta correcta → ranking → … → podio. Puntaje: de 1000 a 500 si acierta, según la rapidez. Con nombre (para el ranking).</p>`;
       if (a.tipo === "nube") cuerpo += `<label class="ed-campo"><span class="rotulo">consigna <span class="sec">· la ven en el celular</span></span><input data-act="pregunta" value="${esc(a.pregunta || "")}"></label>
         <label class="ed-campo"><span class="rotulo">palabras por persona</span><select data-act="max">${[1, 2, 3, 4, 5].map((n) => `<option ${n === (+a.max || 3) ? "selected" : ""}>${n}</option>`).join("")}</select></label>`;
       if (a.tipo === "qa") cuerpo += `<label class="ed-campo"><span class="rotulo">consigna <span class="sec">· la ven en el celular</span></span><input data-act="pregunta" value="${esc(a.pregunta || "")}"></label>
@@ -626,6 +690,14 @@ async function consola() {
     $a.innerHTML = `<div class="rotulo lima">actividad en esta diapositiva</div>
       <label class="ed-campo"><select data-act-tipo>${tipos.map(([v, t]) => `<option value="${v}" ${v === tipo ? "selected" : ""}>${t}</option>`).join("")}</select></label>${cuerpo}`;
 
+    $a.onclick = (ev) => {
+      const quitar = ev.target.closest("[data-qquitar]"), agregar = ev.target.closest("[data-qagregar]");
+      if (!a?.quiz || (!quitar && !agregar)) return;
+      if (quitar) { if (a.quiz.length <= 1) return toast("El quiz necesita al menos una pregunta."); a.quiz.splice(+quitar.dataset.qquitar, 1); }
+      else a.quiz.push({ pregunta: "¿Nueva pregunta?", opciones: ["Opción A", "Opción B", "Opción C", "Opción D"], correcta: 0, segundos: 20 });
+      despuesDeEditar();
+      pintarActividad(s);
+    };
     $a.onchange = $a.oninput = (ev) => {
       const el = ev.target;
       if (el.matches("[data-act-tipo]")) {
@@ -637,9 +709,23 @@ async function consola() {
           const ab = acts.find((x) => x.tipo === "abiertas");
           if (!ab) { toast("Primero creá una actividad de preguntas abiertas en otra diapositiva."); return pintarActividad(s); }
           def.muros.push({ diapositiva: s.id, actividad: ab.id, pregunta: 0 });
-        } else if (el.value) def.actividades.push(nuevaActividad(el.value, s));
+        } else if (el.value) {
+          const nueva = nuevaActividad(el.value, s);
+          def.actividades.push(nueva);
+          // un quiz creado en la diapositiva en pantalla queda listo en su presentación
+          if (nueva.tipo === "quiz" && s.id === e.actual) guardar({ quiz: quizNuevo(nueva), actividad: nueva.id, abierta: true });
+        }
         despuesDeEditar();
         return pintarActividad(s);
+      }
+      if (el.dataset.q != null && a?.quiz) {
+        const q = a.quiz[+el.dataset.q], k = el.dataset.qk;
+        if (k === "opciones") { q.opciones = el.value.split("\n").map((x) => x.trim()).filter(Boolean).slice(0, 4); if (+q.correcta >= q.opciones.length) q.correcta = 0; }
+        else if (k === "correcta" || k === "segundos") q[k] = Math.max(k === "segundos" ? 5 : 0, +el.value || 0);
+        else q[k] = el.value;
+        despuesDeEditar();
+        if (ev.type === "change" && k === "opciones") pintarActividad(s); // actualiza la lista de la correcta
+        return;
       }
       if (el.dataset.muro && m) { m[el.dataset.muro] = el.dataset.muro === "pregunta" ? +el.value : el.value; if (el.dataset.muro === "actividad") m.pregunta = 0; despuesDeEditar(); return pintarActividad(s); }
       if (!a) return;
@@ -1221,7 +1307,7 @@ async function consola() {
       if (c) c.onclick = () => { guardar({ abierta: false }); render(); };
       return;
     }
-    const res = calcular(a, respuestas, qa);
+    const res = calcular(a, respuestas, qa, e.quiz);
     const abierta = e.actividad === a.id && e.abierta;
     const muro = muroDeDiapositiva(def, e.actual);
     const esDeEsta = actDeDiapositiva()?.id === a.id;
@@ -1249,6 +1335,7 @@ async function consola() {
     const rv = document.getElementById("rev");
     if (rv) rv.onclick = () => tecla("r");
     if (a.tipo === "qa") return panelPreguntas(a, res);
+    if (a.tipo === "quiz") return panelQuiz(a, res);
     if (a.tipo !== "abiertas") return;
 
     const $l = document.getElementById("lista");
@@ -1268,6 +1355,18 @@ async function consola() {
       guardar({ destacadas: d });
       render();
     }));
+  }
+
+  // Panel del quiz: en qué paso está, quién va ganando y reiniciar
+  function panelQuiz(a, res) {
+    const q = e.quiz?.actividad === a.id ? e.quiz : null, n = (a.quiz || []).length;
+    const paso = !q ? "sin empezar (llegá a la diapositiva)" : q.estado === "intro" ? "presentación" : q.estado === "fin" ? "terminado" : `pregunta ${q.i + 1} de ${n} · ${{ pregunta: "respondiendo", resultado: "resultado", ranking: "ranking" }[q.estado]}`;
+    const $l = document.getElementById("lista");
+    $l.innerHTML = `<div class="sec" style="font-size:14px">${esc(paso)}${q?.estado === "pregunta" ? ` · ${res.respondieron} respondieron` : ""} · siguiente paso con →</div>
+      ${res.ranking.slice(0, 5).map((p, k) => `<div class="resp"><span class="mono lima">${k + 1}</span><span style="flex:1">${esc(p.nombre)}</span><b class="mono">${p.puntos}</b></div>`).join("")}
+      <div class="acciones"><button class="btn sec-btn chico" id="qsig">siguiente paso (→)</button><button class="btn peligro chico" id="qreset">reiniciar quiz</button></div>`;
+    document.getElementById("qsig").onclick = () => (quizEnPantalla() ? avanzarQuiz(a) : toast("Andá a la diapositiva del quiz."));
+    document.getElementById("qreset").onclick = () => reiniciarQuiz(a);
   }
 
   // Moderar preguntas del público: ocultar (no se muestra en ningún lado) o marcar respondida

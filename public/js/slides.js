@@ -477,6 +477,68 @@ function rankingPreguntas(sl, res) {
   tb(sl, { x: M, y: 6.42, w: 9, h: 0.35, mono: true, size: 14, color: "texto_secundario" }, `${items.length} pregunta${items.length === 1 ? "" : "s"}${items.length > 6 ? ` · se muestran las 6 más votadas` : ""}`);
 }
 
+// ---------- quiz (tipo Kahoot) ----------
+const QUIZ_COL = ["lima", "fucsia", "celeste", "verde"], QUIZ_FIG = ["▲", "◆", "●", "■"];
+export const figuraQuiz = (j) => QUIZ_FIG[j % 4];
+export const colorQuiz = (j) => QUIZ_COL[j % 4];
+// q: { estado: 'intro'|'pregunta'|'resultado'|'ranking'|'fin', i, n, titulo, pregunta, opciones, correcta, conteos, respondieron, restante, ranking }
+function quizPantalla(sl, q, ctx) {
+  const titulo = (t) => tb(sl, { x: M, y: 0.45, w: 9, h: 0.4, mono: true, size: 16, color: "lima" }, esc(t));
+  if (q.estado === "intro") {
+    titulo(`// quiz · ${q.n} pregunta${q.n === 1 ? "" : "s"}`);
+    tb(sl, { x: M, y: 1.3, w: 7.2, h: 2.6, size: 60, bold: true, valign: "bottom", lh: 1.05 }, `${esc(q.titulo)}<span class="cursor blink">_</span>`);
+    tb(sl, { x: M, y: 4.2, w: 7.2, h: 1.6, size: 26, color: "texto_secundario", lh: 1.35 }, "Entrá desde el celular y poné tu nombre para aparecer en el ranking. Responder rápido da más puntos.");
+    if (ctx.joinUrl) {
+      const c = rect(sl, 8.4, 1.3, 4.2, 4.2, null);
+      c.classList.add("qrbox"); c.style.padding = px(0.12); c.innerHTML = qrSvg(ctx.joinUrl);
+      tb(sl, { x: 8.1, y: 5.65, w: 4.8, h: 0.45, mono: true, size: 16, color: "lima", align: "center" }, esc(ctx.joinUrl.replace(/^https?:\/\//, "")));
+    }
+    return franja(sl);
+  }
+  if (q.estado === "pregunta" || q.estado === "resultado") {
+    titulo(`// pregunta ${q.i + 1} de ${q.n}`);
+    if (q.estado === "pregunta") {
+      const c = q.restante <= 5 ? "naranja" : "lima";
+      tb(sl, { x: 10.6, y: 0.35, w: 2.0, h: 1.0, size: 64, bold: true, mono: true, color: c, align: "right", lh: 1 }, q.restante > 0 ? String(q.restante) : "0");
+      tb(sl, { x: 8.6, y: 1.3, w: 4.0, h: 0.4, mono: true, size: 16, color: "texto_secundario", align: "right" }, q.restante > 0 ? `${q.respondieron} respondieron` : `¡tiempo! · ${q.respondieron} respondieron`);
+    }
+    tb(sl, { x: M, y: 1.4, w: q.estado === "pregunta" ? 9.6 : W, h: 1.9, size: 44, bold: true, valign: "middle", lh: 1.15 }, md(q.pregunta));
+    const n = q.opciones.length, cols = n > 2 ? 2 : n, filas = Math.ceil(n / cols), gap = 0.25;
+    const w = (W - gap * (cols - 1)) / cols, h = Math.min(1.45, (3.45 - gap * (filas - 1)) / filas);
+    const total = Math.max(1, (q.conteos || []).reduce((a, b) => a + b, 0));
+    q.opciones.forEach((o, j) => {
+      const x = M + (j % cols) * (w + gap), y = 3.55 + Math.floor(j / cols) * (h + gap);
+      const res = q.estado === "resultado", ok = res && j === q.correcta, apagada = res && !ok;
+      const caja = rect(sl, x, y, w, h, apagada ? "superficie" : QUIZ_COL[j % 4]);
+      if (ok) caja.style.outline = `${8}px solid ${col("texto")}`;
+      const tc = apagada ? "texto_secundario" : "texto_sobre_acento";
+      tb(sl, { x: x + 0.25, y, w: 0.7, h, size: 34, color: tc, valign: "middle" }, QUIZ_FIG[j % 4]);
+      tb(sl, { x: x + 0.95, y, w: w - (res ? 2.4 : 1.2), h, size: n > 2 ? 26 : 30, bold: true, color: tc, valign: "middle", lh: 1.1 }, `${esc(o)}${ok ? " ✓" : ""}`);
+      if (res) {
+        const k = q.conteos?.[j] || 0;
+        tb(sl, { x: x + w - 1.45, y, w: 1.2, h, size: 34, bold: true, mono: true, color: tc, valign: "middle", align: "right" }, String(k));
+        rect(sl, x, y + h - 0.12, w * (k / total), 0.12, apagada ? "linea" : "texto_sobre_acento");
+      }
+    });
+    return;
+  }
+  // ranking / fin
+  const fin = q.estado === "fin", lista = (q.ranking || []).slice(0, fin ? 8 : 5);
+  titulo(fin ? "// quiz · resultado final" : `// ranking · después de la pregunta ${q.i + 1} de ${q.n}`);
+  tb(sl, { x: M, y: 1.1, w: W, h: 0.9, size: 40, bold: true }, fin ? "¡Terminó el quiz!" : "Ranking");
+  if (!lista.length) return tb(sl, { x: M, y: 2.5, w: W, h: 1, size: 28, color: "texto_secundario" }, "Nadie respondió todavía.");
+  const max = Math.max(1, lista[0].puntos), rh = fin ? 0.56 : 0.82;
+  lista.forEach((p, k) => {
+    const y = 2.2 + k * rh, c = k === 0 ? "lima" : k === 1 ? "fucsia" : k === 2 ? "celeste" : "texto";
+    rect(sl, M, y, W, 0.012, "linea");
+    tb(sl, { x: M, y, w: 0.9, h: rh, size: fin ? 24 : 30, bold: true, mono: true, color: c, valign: "middle" }, String(k + 1).padStart(2, "0"));
+    tb(sl, { x: M + 0.95, y, w: 7.3, h: rh, size: fin ? 24 : 30, bold: k < 3, color: c, valign: "middle" }, esc(p.nombre));
+    rect(sl, M + 8.4, y + rh / 2 - 0.08, 2.2 * (p.puntos / max), 0.16, k < 3 ? c : "linea");
+    tb(sl, { x: M + 10.7, y, w: 1.23, h: rh, size: fin ? 22 : 28, bold: true, mono: true, color: c, valign: "middle", align: "right" }, String(p.puntos));
+  });
+  if (fin) franja(sl);
+}
+
 function pantallaQR(sl, ctx) {
   const q = rect(sl, M, 0.9, 5.7, 5.7, null);
   q.classList.add("qrbox");
@@ -502,6 +564,7 @@ export function renderSlide(s, ctx) {
   sl.dataset.pasos = 0;
   if (paleta) Object.entries(VARS_CSS).forEach(([k, v]) => sl.style.setProperty(v, paleta[k]));
   if (ctx.overlay === "pizarron") { sl.innerHTML = svgPizarron(ctx.pizarron); return sl; }
+  if (ctx.quiz && ctx.overlay !== "qr" && ctx.overlay !== "negro") { quizPantalla(sl, ctx.quiz, ctx); return sl; }
   if (ctx.overlay === "qr" && ctx.joinUrl) { pantallaQR(sl, ctx); return sl; }
   if (!s) return sl;
   const fn = R[s.plantilla];

@@ -1,6 +1,6 @@
 // Panel de administración: ver respuestas, exportarlas y reiniciar la sesión.
 import { cargarTaller, esc, qrSvg, sinMarcas } from "./slides.js";
-import { codigoSesion, urlParticipante, resolverActividades, numeroDe } from "./actividades.js";
+import { codigoSesion, urlParticipante, resolverActividades, numeroDe, puntosQuiz } from "./actividades.js";
 import { cargarPresentacion } from "./presentacion.js";
 import * as fb from "./firebase.js";
 import { avisoVersion } from "./version.js";
@@ -30,8 +30,13 @@ function login() {
   };
 }
 
+let quizSesion = null; // estado del quiz en la sesión (horas de inicio y correctas, para los puntos)
 // Columnas de una actividad: [{titulo, valor(r)}]
 function columnas(a) {
+  if (a.tipo === "quiz") return [
+    ...(a.quiz || []).map((q, i) => ({ titulo: q.pregunta, valor: (r) => (r.valores?.[i] != null ? `${q.opciones[r.valores[i]] ?? "?"} ${r.valores[i] === +q.correcta ? "✓" : "✗"}` : "") })),
+    { titulo: "puntos", valor: (r) => String((a.quiz || []).reduce((t, _, i) => t + puntosQuiz(a, quizSesion, r, i), 0)) },
+  ];
   if (a.tipo === "votacion") return [{ titulo: a.pregunta, valor: (r) => a.opciones[r.valores?.opcion] ?? "" }];
   if (a.tipo === "clasificar") return a.items.map((it, i) => ({ titulo: it, valor: (r) => (r.valores?.[i] != null ? `${+r.valores[i] + 1} · ${a.columnas[r.valores[i]]}` : "") }));
   if (a.tipo === "nube") return Array.from({ length: +a.max || 3 }, (_, i) => ({ titulo: `palabra ${i + 1}`, valor: (r) => r.valores?.[i] || "" }));
@@ -107,7 +112,7 @@ function iniciar() {
   fb.onSnapshot(fb.refPreguntasQA(sid), (qs) => { preguntasQA = qs.docs.map((d) => ({ _id: d.id, ...d.data() })); recomponer(); }, (e) => console.warn(e));
   fb.onSnapshot(fb.refVotos(sid), (qs) => { votosQA = qs.docs.map((d) => d.data()); recomponer(); }, (e) => console.warn(e));
   let nav = {};
-  fb.onSnapshot(fb.refSesion(sid), (s) => { sesion = s.data() || {}; pintarSesion(); });
+  fb.onSnapshot(fb.refSesion(sid), (s) => { sesion = s.data() || {}; quizSesion = sesion.quiz || null; pintarSesion(); pintar(); });
   fb.onSnapshot(fb.refNav(sid), (s) => { nav = s.data() || {}; pintarSesion(); });
 
   function pintarSesion() {

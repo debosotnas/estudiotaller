@@ -349,3 +349,11 @@ td.vacio { color: var(--linea); }
 .resp.qa .qa-votos { min-width: 28px; text-align: right; font-size: 16px; }
 .resp.qa .qa-t { flex: 1; }
 .resp.qa.oculta { opacity: .45; }
+
+/* quiz (celular) */
+.quiz-preg { font-size: 24px; margin: 18px 0 14px; }
+.quiz-ops { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.quiz-op { min-height: 120px; border: 0; background: var(--c); color: var(--sobre-acento); font-size: 18px; font-weight: 700; display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 8px; padding: 12px; text-align: left; touch-action: manipulation; }
+.quiz-op .fig { font-size: 30px; }
+.quiz-op.sel { outline: 4px solid var(--texto); outline-offset: 3px; }
+.quiz-op:disabled:not(.sel) { opacity: .35; }

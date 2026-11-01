@@ -1,7 +1,7 @@
 // Vista de los participantes (celular): se une a la sesión, ve lo que el presentador comparte y responde la actividad abierta.
 import { cargarTaller, renderSlide, montar, encajar, esc } from "./slides.js";
 import { vigilarVersion } from "./version.js";
-import { codigoSesion, urlParticipante, resolverActividades, actividadPorId } from "./actividades.js";
+import { codigoSesion, urlParticipante, resolverActividades, actividadPorId, puntosQuiz } from "./actividades.js";
 import { cargarPresentacion, armarPresentacion, TALLER } from "./presentacion.js";
 import { entrarAnonimo, refSesion, refRespuesta, refContenido, leerContenido, refPizarron, consultaTrazos, refPreguntasQA, refVotos, onSnapshot, setDoc, getDoc, deleteDoc, doc, query, where, serverTimestamp } from "./firebase.js";
 
@@ -175,7 +175,8 @@ addEventListener("orientationchange", () => setTimeout(ajustarGrande, 200));
 // ---------- actividades ----------
 function render() {
   const act = estado.abierta ? actividadPorId(acts, estado.actividad) : null;
-  const clave = act ? `act:${act.id}:${JSON.stringify([act.tipo, act.pregunta, act.max, act.preguntas, act.opciones, act.items, act.columnas])}` : "espera";
+  const q = act?.tipo === "quiz" && estado.quiz?.actividad === act.id ? estado.quiz : null; // en el quiz, cada paso es una vista nueva
+  const clave = act ? `act:${act.id}:${JSON.stringify([act.tipo, act.pregunta, act.max, act.preguntas, act.opciones, act.items, act.columnas, act.quiz, q && [q.estado, q.i, q.correctas]])}` : "espera";
   if (clave === vista) return;
   const anterior = vista;
   vista = clave;
@@ -213,6 +214,7 @@ async function mostrarActividad(act) {
   if (act.tipo === "clasificar") return clasificar(act, previa, false);
   if (act.tipo === "nube") return nube(act, previa, false);
   if (act.tipo === "qa") return preguntasPublico(act);
+  if (act.tipo === "quiz") return quizCelular(act, previa);
   return abiertas(act, previa, false);
 }
 
@@ -453,4 +455,56 @@ function preguntasPublico(act) {
     clearTimeout(aviso);
     btn.disabled = false;
   };
+}
+
+// ---------- quiz: responder rápido; después de cada pregunta, si acertó y los puntos ----------
+const FIG = ["▲", "◆", "●", "■"], COL = ["lima", "fucsia", "celeste", "verde"];
+function quizCelular(act, previa) {
+  const q = estado.quiz?.actividad === act.id ? estado.quiz : null;
+  const v = previa?.valores || {};
+  const puntos = (act.quiz || []).reduce((a, _, k) => a + puntosQuiz(act, q, previa, k), 0);
+  const cab = `<div style="margin-top:20px;display:flex;gap:8px;flex-wrap:wrap"><span class="etq">● quiz</span>${q && q.i >= 0 ? `<span class="etq sec-etq">pregunta ${q.i + 1} de ${act.quiz.length}</span>` : ""}<span class="etq sec-etq">${puntos} puntos</span></div>`;
+  if (!q || q.estado === "intro") {
+    pintar(`${cab}<h1>${esc(act.titulo)}<span class="lima blink">_</span></h1>
+      <p class="sec">El quiz empieza en un momento. Cuanto más rápido respondas bien, más puntos.</p>
+      <p>Tu nombre en el ranking: <b>${esc(nombre || "anónimo")}</b></p>
+      <div class="acciones"><button class="btn sec-btn" id="cambiar">${nombre ? "cambiar mi nombre" : "poner mi nombre"}</button></div>${franja}`);
+    document.getElementById("cambiar").onclick = () => { ls.del(`et_unido_${sid}`); bienvenida(); };
+    return;
+  }
+  const p = act.quiz[q.i] || { opciones: [] };
+  if (q.estado === "pregunta") {
+    if (v[q.i] != null) {
+      pintar(`${cab}<h1>¡Respuesta enviada!</h1><p class="sec">Elegiste <b class="lima">${FIG[v[q.i]]} ${esc(p.opciones[v[q.i]] || "")}</b>. Esperá el resultado en la pantalla.</p>${franja}`);
+      return;
+    }
+    pintar(`${cab}<h2 class="quiz-preg">${esc(p.pregunta)}</h2>
+      <div class="quiz-ops">${p.opciones.map((o, j) => `<button class="quiz-op" data-j="${j}" style="--c:var(--${COL[j]})"><span class="fig">${FIG[j]}</span><span>${esc(o)}</span></button>`).join("")}</div>
+      <div id="msg"></div>`);
+    $app.querySelectorAll(".quiz-op").forEach((b) => (b.onclick = async () => {
+      $app.querySelectorAll(".quiz-op").forEach((x) => (x.disabled = true));
+      b.classList.add("sel");
+      const j = +b.dataset.j;
+      try {
+        await guardar(act, { ...v, [q.i]: j, ["t" + q.i]: serverTimestamp() });
+        quizCelular(act, { ...previa, valores: { ...v, [q.i]: j } });
+      } catch (err) {
+        $app.querySelectorAll(".quiz-op").forEach((x) => (x.disabled = false));
+        const msg = String(err?.code || "").includes("permission") ? "Se terminó el tiempo de esta pregunta." : "No se pudo enviar. Probá de nuevo.";
+        document.getElementById("msg").innerHTML = `<div class="estado-err">${msg}</div>`;
+      }
+    }));
+    return;
+  }
+  if (q.estado === "resultado") {
+    const c = q.correctas?.[q.i], mia = v[q.i], pts = puntosQuiz(act, q, previa, q.i);
+    const titulo = mia == null ? "No respondiste" : mia === c ? `✓ ¡Correcto! +${pts}` : "✗ Incorrecto";
+    pintar(`${cab}<h1 class="${mia === c && mia != null ? "lima" : ""}">${titulo}</h1>
+      <p class="sec">La correcta era <b>${FIG[c] || ""} ${esc(p.opciones[c] || "")}</b>.</p>
+      <p>Llevás <b class="lima">${puntos}</b> puntos.</p>${franja}`);
+    return;
+  }
+  pintar(`${cab}<h1>${q.estado === "fin" ? "¡Terminó el quiz!" : "Ranking en la pantalla"}</h1>
+    <p>Tus puntos: <b class="lima" style="font-size:28px">${puntos}</b></p>
+    <p class="sec">${q.estado === "fin" ? "Mirá el podio en la pantalla." : "Preparate para la próxima pregunta."}</p>${franja}`);
 }
