@@ -40,6 +40,10 @@ Con **✎ editar contenido** activado:
 - **Temas:** Señal oscuro, Señal claro, Papel y Noche (en índice). Los colores se guardan por nombre (lima, fucsia…), así que al cambiar de tema todo se recolorea, también en las libres.
 - **.pptx:** exporta también las libres; las imágenes se descargan e incluyen si el sitio lo permite (si no, queda el enlace).
 
+## Cronómetro por bloque
+
+En la barra de la consola (nunca en el proyector): **▶** inicia, **⏸** pausa (un recreo), **⟲** pone en cero. Muestra el bloque de la diapositiva en pantalla con su tiempo usado y planificado (`05 · 7:32 / 10:00`) y el total del taller (`42:10 / 90:00`); se pone naranja al llegar al 80 % y rojo al pasarse. El tiempo se asigna solo al bloque de la diapositiva que está en pantalla. Los minutos de cada bloque se editan en **índice → bloques** (el taller ya los trae en el JSON), donde también se ve el tiempo usado por bloque. Se guarda en esa compu, así que sobrevive a recargar la consola.
+
 ## Antes del taller y con mala señal
 
 - **Preparar para el taller** (al final de «respuestas», `/admin`): descarga una copia de todas las respuestas, las borra, limpia los 4 pizarrones y vuelve a la primera diapositiva con las actividades cerradas. Cada paso se puede desmarcar. Para ensayar sin tocar la presentación real: «duplicar» en Mis presentaciones.

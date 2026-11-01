@@ -259,6 +259,11 @@ async function consola() {
     <div class="barra">
       <span class="titulo"><a href="/presentaciones" title="Mis presentaciones">// estudio taller</a> · ${esc(pres.titulo)}</span>
       <span class="conexion" id="conexion" hidden></span>
+      <span class="crono" id="crono" title="Cronómetro por bloque (solo lo ves vos)">
+        <button class="mini" id="cr-play" title="iniciar / pausar">▶</button>
+        <span id="cr-bloque" class="cr-dato"></span><span id="cr-total" class="cr-dato"></span>
+        <button class="mini" id="cr-reset" title="reiniciar el cronómetro">⟲</button>
+      </span>
       <button class="btn sec-btn chico" id="ant">←</button><span class="pos" id="pos"></span><button class="btn sec-btn chico" id="sig">→</button>
       <button class="btn sec-btn chico" id="bidx">índice</button>
       <button class="btn sec-btn chico" id="bqr" title="Q">qr</button>
@@ -473,6 +478,7 @@ async function consola() {
   function render() {
     const v = vista();
     const s = v.s;
+    cronoEnBloque(s.bloque);
     difundir(v);
     actualizarCompartida(v);
     if (!enLugar) escenario(v);
@@ -889,6 +895,61 @@ async function consola() {
   }
   document.fonts?.ready.then(() => render()); // medir con las fuentes ya cargadas
 
+  // ---- cronómetro por bloque (solo en esta compu; no gasta Firestore) ----
+  const CLAVE_CRONO = `et_crono_${sid}`;
+  const cronoNuevo = () => ({ corriendo: false, total: 0, porBloque: {}, bloque: null, desde: null });
+  let crono = (() => { try { return { ...cronoNuevo(), ...JSON.parse(localStorage.getItem(CLAVE_CRONO) || "{}") }; } catch { return cronoNuevo(); } })();
+  const guardarCrono = () => { try { localStorage.setItem(CLAVE_CRONO, JSON.stringify(crono)); } catch {} };
+  // Pasa lo transcurrido desde el último corte al bloque en curso y al total
+  function cronoCorte() {
+    if (!crono.corriendo || !crono.desde) return;
+    const ahora = Date.now(), d = ahora - crono.desde;
+    crono.total += d;
+    if (crono.bloque) crono.porBloque[crono.bloque] = (crono.porBloque[crono.bloque] || 0) + d;
+    crono.desde = ahora;
+  }
+  function cronoEnBloque(b) {
+    if (b === crono.bloque) return;
+    cronoCorte();
+    crono.bloque = b || null;
+    guardarCrono();
+    pintarCrono();
+  }
+  const usado = (b) => (crono.porBloque[b] || 0) + (crono.corriendo && crono.bloque === b && crono.desde ? Date.now() - crono.desde : 0);
+  const usadoTotal = () => crono.total + (crono.corriendo && crono.desde ? Date.now() - crono.desde : 0);
+  const mmss = (ms) => { const t = Math.floor(ms / 1000); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`; };
+  const estadoTiempo = (u, plan) => (!plan ? "" : u > plan ? "pasado" : u >= plan * 0.8 ? "casi" : "");
+  function pintarCrono() {
+    const $b = document.getElementById("cr-bloque"), $t = document.getElementById("cr-total");
+    if (!$b) return;
+    const b = mapaBloques(bloquesLista)[crono.bloque];
+    const plan = (+b?.minutos || 0) * 60000, u = usado(crono.bloque);
+    const planTotal = bloquesLista.reduce((a, x) => a + (+x.minutos || 0), 0) * 60000, ut = usadoTotal();
+    $b.textContent = b ? `${b.id} · ${mmss(u)}${plan ? ` / ${mmss(plan)}` : ""}` : "sin bloque";
+    $b.title = b ? `bloque «${b.nombre}»` : "";
+    $b.className = `cr-dato ${estadoTiempo(u, plan)}`;
+    $t.textContent = `total ${mmss(ut)}${planTotal ? ` / ${mmss(planTotal)}` : ""}`;
+    $t.className = `cr-dato ${estadoTiempo(ut, planTotal)}`;
+    const play = document.getElementById("cr-play");
+    play.textContent = crono.corriendo ? "⏸" : "▶";
+    document.getElementById("crono").classList.toggle("parado", !crono.corriendo);
+  }
+  document.getElementById("cr-play").onclick = () => {
+    if (crono.corriendo) { cronoCorte(); crono.corriendo = false; crono.desde = null; }
+    else { crono.corriendo = true; crono.desde = Date.now(); crono.bloque = actualS()?.bloque || null; }
+    guardarCrono();
+    pintarCrono();
+  };
+  document.getElementById("cr-reset").onclick = () => {
+    if (!confirm("¿Poner el cronómetro en cero (todos los bloques)?")) return;
+    crono = cronoNuevo();
+    crono.bloque = actualS()?.bloque || null;
+    guardarCrono();
+    pintarCrono();
+  };
+  setInterval(pintarCrono, 1000);
+  setInterval(() => { if (crono.corriendo) { cronoCorte(); guardarCrono(); } }, 15000); // por si se cierra la pestaña
+
   // ---- armar la presentación: agregar, duplicar, borrar y mover diapositivas ----
   const indicede = (id) => diapos.findIndex((x) => x.id === id);
   function cambioEstructura(irAId) {
@@ -970,8 +1031,8 @@ async function consola() {
           </span></div>`;
       }).join("")}</div>
       <div class="idx-pie">
-        <div class="idx-bloques"><div class="rotulo">bloques (las etiquetas «// 01 · nombre» de arriba a la izquierda)</div>
-          ${bloquesLista.map((b, i) => `<div class="fila-bloque"><input class="mono" data-bid="${i}" value="${esc(b.id)}" size="4"><input data-bnom="${i}" value="${esc(b.nombre)}"></div>`).join("")}
+        <div class="idx-bloques"><div class="rotulo">bloques (las etiquetas «// 01 · nombre») · minutos planificados · tiempo usado</div>
+          ${bloquesLista.map((b, i) => `<div class="fila-bloque"><input class="mono" data-bid="${i}" value="${esc(b.id)}" size="4"><input data-bnom="${i}" value="${esc(b.nombre)}"><input type="number" min="0" step="1" class="mono" data-bmin="${i}" value="${b.minutos ?? ""}" placeholder="min" title="minutos planificados"><span class="mono sec cr-uso ${estadoTiempo(usado(b.id), (+b.minutos || 0) * 60000)}" title="tiempo usado">${mmss(usado(b.id))}</span></div>`).join("")}
           <button class="btn sec-btn chico" id="nbloque">+ bloque</button></div>
         <div class="idx-opciones">
           <label class="ed-campo"><span class="rotulo">tema</span><select id="tema">${Object.entries(TEMAS_NOMBRES).map(([k, t]) => `<option value="${k}" ${tema === k ? "selected" : ""}>${t}</option>`).join("")}</select></label>
@@ -1010,9 +1071,10 @@ async function consola() {
       f.ondrop = (ev) => { ev.preventDefault(); f.classList.remove("sobre"); if (arrastrada && arrastrada !== f.dataset.id) mover(arrastrada, indicede(f.dataset.id)); };
     });
     // bloques
-    $m.querySelectorAll("[data-bnom], [data-bid]").forEach((inp) => (inp.onchange = () => {
-      const i = +(inp.dataset.bnom ?? inp.dataset.bid);
-      if (inp.dataset.bid != null) {
+    $m.querySelectorAll("[data-bnom], [data-bid], [data-bmin]").forEach((inp) => (inp.onchange = () => {
+      const i = +(inp.dataset.bnom ?? inp.dataset.bid ?? inp.dataset.bmin);
+      if (inp.dataset.bmin != null) { if (inp.value === "") delete bloquesLista[i].minutos; else bloquesLista[i].minutos = Math.max(0, +inp.value); }
+      else if (inp.dataset.bid != null) {
         const viejo = bloquesLista[i].id, nuevo = inp.value.trim() || viejo;
         diapos.forEach((x) => { if (x.bloque === viejo) x.bloque = nuevo; });
         bloquesLista[i].id = nuevo;

@@ -325,3 +325,13 @@ td.vacio { color: var(--linea); }
 /* sin conexión */
 .conexion { font-family: var(--mono); font-size: 12px; font-weight: 700; color: #FF4D4D; }
 #quien.sin-senal { color: #FF4D4D; }
+
+/* cronómetro por bloque (consola) */
+.crono { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 13px; border: 1px solid var(--linea); padding: 2px 4px; }
+.crono .mini { height: 26px; min-width: 26px; }
+.crono.parado .cr-dato { opacity: .55; }
+.cr-dato { white-space: nowrap; }
+.cr-dato.casi, .cr-uso.casi { color: var(--naranja); }
+.cr-dato.pasado, .cr-uso.pasado { color: #FF4D4D; font-weight: 700; }
+.fila-bloque input[data-bmin] { width: 64px; }
+.cr-uso { align-self: center; min-width: 48px; text-align: right; }
