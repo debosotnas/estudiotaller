@@ -1,0 +1,45 @@
+{
+  "_ayuda": "Actividades interactivas. Las diapositivas se nombran por su 'id' (no por número, así se pueden ocultar o insertar sin romper nada). 'diapositiva' abre la actividad al llegar; 'resultados_en' otras diapositivas que muestran sus resultados. Los textos se toman de las propias diapositivas: preguntas_de (ítems de una lista o preguntas de un qr), desde (pregunta y opciones de una diapositiva 'pregunta'), items_de y columnas_de (para clasificar). 'muros' llena una diapositiva 'en_vivo' con respuestas destacadas.",
+  "sesion": "legado",
+  "titulo": "IA, iglesia y legado",
+  "actividades": [
+    {
+      "id": "preguntas_inicio",
+      "tipo": "abiertas",
+      "titulo": "Escaneá y respondé",
+      "anonimo": true,
+      "diapositiva": "d07",
+      "resultados_en": ["d07b"],
+      "preguntas_de": "d07b"
+    },
+    {
+      "id": "sofia",
+      "tipo": "votacion",
+      "titulo": "El caso de Sofía",
+      "diapositiva": "d13",
+      "desde": "d13"
+    },
+    {
+      "id": "tareas",
+      "tipo": "clasificar",
+      "titulo": "¿Dónde va cada tarea?",
+      "por_grupo": true,
+      "diapositiva": "d29",
+      "resultados_en": ["d30"],
+      "items_de": "d29",
+      "columnas_de": "d30"
+    },
+    {
+      "id": "para_llevarte",
+      "tipo": "abiertas",
+      "titulo": "Para llevarte",
+      "anonimo": false,
+      "diapositiva": "d45",
+      "preguntas_de": "d45"
+    }
+  ],
+  "muros": [
+    { "diapositiva": "d08", "actividad": "preguntas_inicio", "pregunta": 0 },
+    { "diapositiva": "d41", "actividad": "preguntas_inicio", "pregunta": 0 }
+  ]
+}

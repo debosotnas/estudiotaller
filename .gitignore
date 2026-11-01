@@ -1,0 +1,7 @@
+node_modules/
+*.log
+.firebase/
+.DS_Store
+.claude/
+# se genera en cada publicación (firebase.json → predeploy)
+public/version.json

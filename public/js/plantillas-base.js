@@ -1,0 +1,27 @@
+// Galería de plantillas: nombre, para qué sirve y un contenido de ejemplo con el que nace cada diapositiva nueva.
+export const GALERIA = [
+  { nombre: "En blanco (libre)", uso: "Elementos sueltos: mover, redimensionar, imágenes", s: { plantilla: "libre", elementos: [
+    { id: "e-bloque", tipo: "texto", rol: "bloque", x: 0.7, y: 0.45, w: 9, h: 0.4, texto: "", size: 16, color: "lima", mono: true },
+    { id: "e-numero", tipo: "texto", rol: "numero", x: 11.13, y: 6.85, w: 1.5, h: 0.35, texto: "", size: 12, color: "texto_secundario", mono: true, align: "right" },
+    { id: "e-titulo", tipo: "texto", x: 0.7, y: 1.2, w: 11.93, h: 0.9, texto: "Título", size: 36, color: "texto", bold: true },
+  ] } },
+  { nombre: "Portada", uso: "Inicio o cierre", s: { plantilla: "portada", etiqueta: "> taller", titulo: "Título de\nla presentación", subtitulo: "Subtítulo", pie: "Lugar · fecha" } },
+  { nombre: "Frase", uso: "Una idea para decir en voz alta", s: { plantilla: "frase", frase: "Una idea **fuerte** por diapositiva.", apoyo: "Texto de apoyo, más chico." } },
+  { nombre: "Frase con lista", uso: "Una idea y algunos puntos", s: { plantilla: "frase", frase: "La idea **principal**.", apoyo: ["Primer punto", "Segundo punto", "Tercer punto"] } },
+  { nombre: "Escalera", uso: "Frase con la ilustración de la escalera", s: { plantilla: "frase", ilustracion: "escalera", frase: "La paradoja de la **escalera**", apoyo: "Texto de apoyo.", rotulos_ilustracion: { escalones_ia: "abajo", escalones_altos: "arriba" } } },
+  { nombre: "Pregunta", uso: "Una pregunta para dejar abierta", s: { plantilla: "pregunta", pregunta: "¿Una pregunta con **marcador**?", apoyo: "Texto de apoyo." } },
+  { nombre: "Pregunta con opciones", uso: "Para votar (hasta 3 opciones)", s: { plantilla: "pregunta", pregunta: "¿Qué opinan?", opciones: ["SÍ", "NO", "DEPENDE"], apoyo: "" } },
+  { nombre: "Caso", uso: "Un relato breve", s: { plantilla: "caso", nombre_caso: "Nombre del caso", texto: "Lo que pasó, contado en dos o tres frases.", remate: "La frase final." } },
+  { nombre: "Dato", uso: "Comparar dos cifras", s: { plantilla: "dato", titulo: "Título del dato", valores: [{ valor: "40%", etiqueta: "una cosa", color: "naranja", proporcion: 0.4 }, { valor: "70%", etiqueta: "otra cosa", color: "lima", proporcion: 0.7 }], texto: "Qué significa.", fuente: "Autor, año" } },
+  { nombre: "Dato en columnas", uso: "Dos grupos que se comparan", s: { plantilla: "dato_columnas", titulo: "Título", columnas: [{ titulo: "grupo 1", valor: "resultado", texto: "Explicación breve.", color: "lima" }, { titulo: "grupo 2", valor: "resultado", texto: "Explicación breve.", color: "naranja" }], pregunta: "¿Por qué?", fuente: "Autor, año" } },
+  { nombre: "Lista", uso: "De 2 a 4 puntos numerados", s: { plantilla: "lista", titulo: "Título de la lista", items: [{ texto: "Primer punto", detalle: "Detalle opcional" }, { texto: "Segundo punto", detalle: "" }, { texto: "Tercer punto", detalle: "" }], pie: "" } },
+  { nombre: "Lista doble", uso: "Hasta 10 ítems cortos en dos columnas", s: { plantilla: "lista_doble", titulo: "Título", items: ["Ítem uno", "Ítem dos", "Ítem tres", "Ítem cuatro", "Ítem cinco", "Ítem seis"] } },
+  { nombre: "Cuatro tarjetas", uso: "4 grupos o ideas en grilla", s: { plantilla: "grupos", titulo: "Título", tarjetas: [{ rotulo: "grupo A", color: "lima", texto: "Texto" }, { rotulo: "grupo B", color: "fucsia", texto: "Texto" }, { rotulo: "grupo C", color: "celeste", texto: "Texto" }, { rotulo: "grupo D", color: "verde", texto: "Texto" }], pie: "" } },
+  { nombre: "Cuatro columnas", uso: "4 tarjetas en fila y una lista abajo", s: { plantilla: "grupos", disposicion: "columnas", titulo: "Título", tarjetas: [{ rotulo: "columna 1", color: "lima", texto: "Texto" }, { rotulo: "columna 2", color: "fucsia", texto: "Texto" }, { rotulo: "columna 3", color: "celeste", texto: "Texto" }, { rotulo: "columna 4", color: "verde", texto: "Texto" }], pie: ["Una pregunta", "Otra pregunta"] } },
+  { nombre: "Grupo", uso: "La consigna de un grupo, con tres «¿Y si…?»", s: { plantilla: "grupo", grupo: "A", pregunta_partida: "La pregunta del grupo", y_si: ["¿Y si…?", "¿Y si…?", "¿Y si…?"] } },
+  { nombre: "Consulta a la IA", uso: "Ventana de chat con una consigna", s: { plantilla: "ia", encabezado: "Encabezado", consigna: "La consigna para la IA", pie: "Texto de apoyo." } },
+  { nombre: "Texto bíblico", uso: "Un pasaje completo", s: { plantilla: "texto_biblico", referencia: "Libro 1:1", version: "RV60", texto: "El texto del pasaje, con las palabras **clave** resaltadas." } },
+  { nombre: "En vivo", uso: "Renglones para completar o mostrar respuestas", s: { plantilla: "en_vivo", titulo: "Lo que dijeron", renglones: 4 } },
+  { nombre: "QR", uso: "El código para entrar desde el celular", s: { plantilla: "qr", titulo: "Escaneá", preguntas: [], pie: "" } },
+  { nombre: "Recursos", uso: "Fuentes y QR a un enlace", s: { plantilla: "recursos", titulo: "Recursos y fuentes", items: [{ texto: "Autor, año", detalle: "De qué trata" }], url: "https://estudiotaller.web.app/material", rotulo_qr: "el material" } },
+];

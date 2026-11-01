@@ -1,0 +1,1676 @@
+{
+  "meta": {
+    "titulo": "IA, iglesia y legado: La inteligencia artificial en la misión de Dios",
+    "evento": "Congreso «Legado — Honrando el llamado recibido» (Efesios 4:1–2)",
+    "duracion_min": 90,
+    "idioma": "es",
+    "version": "1.2",
+    "uso": "Proyección en salón grande con luz de día. Se importa a Google Slides. Este JSON es la fuente: la parte 1 define el sistema visual y la parte 2 el contenido de cada diapositiva.",
+    "nota_rev": "'rev' en una diapositiva: si es mayor que la de la versión editada en la app, la app reemplaza la editada por esta."
+  },
+  "plantilla": {
+    "nombre": "Señal",
+    "concepto": "Fondo casi negro, letra técnica y acentos flúor de alto contraste. Habla el idioma de la IA (consola, prompt, cursor) sin perder legibilidad a distancia.",
+    "lienzo": {
+      "ratio": "16:9",
+      "ancho_in": 13.333,
+      "alto_in": 7.5,
+      "ancho_px_referencia": 1920,
+      "alto_px_referencia": 1080
+    },
+    "colores": {
+      "fondo": {
+        "hex": "#07090B",
+        "uso": "Fondo de todas las diapositivas. Casi negro puro para compensar la luz de día."
+      },
+      "superficie": {
+        "hex": "#151A1F",
+        "uso": "Tarjetas y recuadros sobre el fondo."
+      },
+      "linea": {
+        "hex": "#2A333C",
+        "uso": "Bordes neutros, renglones de 'en vivo', barras inactivas."
+      },
+      "texto": {
+        "hex": "#FFFFFF",
+        "uso": "Texto principal."
+      },
+      "texto_secundario": {
+        "hex": "#B8C2CC",
+        "uso": "Subtítulos, apoyos, fuentes, numeración."
+      },
+      "lima": {
+        "hex": "#D4FF00",
+        "uso": "Acento general: idea clave, etiquetas de bloque, cursor. También color del grupo A."
+      },
+      "fucsia": {
+        "hex": "#FF2EA6",
+        "uso": "Grupo B."
+      },
+      "celeste": {
+        "hex": "#2EE6FF",
+        "uso": "Grupo C."
+      },
+      "verde": {
+        "hex": "#3DFF8A",
+        "uso": "Grupo D."
+      },
+      "naranja": {
+        "hex": "#FF8A1F",
+        "uso": "Reservado para la IA: respuestas de la máquina, resultados 'con IA'."
+      },
+      "texto_sobre_acento": {
+        "hex": "#07090B",
+        "uso": "Texto encima de un fondo lima u otro flúor."
+      }
+    },
+    "grupos": {
+      "A": {
+        "nombre": "Formativa",
+        "color": "lima"
+      },
+      "B": {
+        "nombre": "Pastoral",
+        "color": "fucsia"
+      },
+      "C": {
+        "nombre": "Comunitaria",
+        "color": "celeste"
+      },
+      "D": {
+        "nombre": "Identidad",
+        "color": "verde"
+      }
+    },
+    "tipografias": {
+      "principal": {
+        "familia": "Space Grotesk",
+        "fuente": "Google Fonts",
+        "pesos": [
+          500,
+          700
+        ],
+        "uso": "Títulos, frases, textos."
+      },
+      "mono": {
+        "familia": "JetBrains Mono",
+        "fuente": "Google Fonts",
+        "pesos": [
+          500
+        ],
+        "uso": "Etiquetas de bloque, numeración, fuentes, consignas a la IA, rótulos."
+      }
+    },
+    "escala_tipografica_pt": {
+      "portada": 72,
+      "dato_numero": 96,
+      "frase": 44,
+      "pregunta": 40,
+      "titulo": 36,
+      "cuerpo_grande": 28,
+      "cuerpo": 22,
+      "rotulo": 18,
+      "etiqueta": 16,
+      "pie": 14,
+      "minimo_absoluto": 14
+    },
+    "espaciado": {
+      "margen_in": 0.7,
+      "separacion_bloques_in": 0.35,
+      "interlineado_titulos": 1.05,
+      "interlineado_texto": 1.25
+    },
+    "elementos_comunes": {
+      "etiqueta_bloque": {
+        "descripcion": "Arriba a la izquierda en todas las diapositivas salvo la portada. Formato '// NN · nombre del bloque', en minúsculas.",
+        "x_in": 0.7,
+        "y_in": 0.45,
+        "w_in": 9.0,
+        "h_in": 0.4,
+        "tipografia": "mono",
+        "tamano_pt": 16,
+        "color": "lima"
+      },
+      "numero_diapositiva": {
+        "descripcion": "Abajo a la derecha: 'n / total'.",
+        "x_in": 11.13,
+        "y_in": 6.85,
+        "w_in": 1.5,
+        "h_in": 0.35,
+        "tipografia": "mono",
+        "tamano_pt": 12,
+        "color": "texto_secundario",
+        "alineacion": "derecha"
+      },
+      "franja_grupos": {
+        "descripcion": "Cuatro barras iguales con los colores de los grupos (lima, fucsia, celeste, verde), separadas 0.08 in. Solo en portada y cierre.",
+        "x_in": 0.7,
+        "y_in": 6.55,
+        "w_in": 11.93,
+        "h_in": 0.09
+      },
+      "cursor": {
+        "descripcion": "Guion bajo '_' en lima al final del título de portada, como cursor de terminal."
+      }
+    },
+    "marcado_texto": {
+      "**texto**": "Resaltado. Su aspecto depende de la plantilla (ver 'resaltado' en cada una).",
+      "*texto*": "Cursiva.",
+      "\\n": "Salto de línea."
+    },
+    "plantillas": {
+      "portada": {
+        "uso": "Inicio y cierre.",
+        "campos": [
+          "etiqueta",
+          "titulo",
+          "subtitulo",
+          "pie"
+        ],
+        "zonas": {
+          "etiqueta": {
+            "x_in": 0.7,
+            "y_in": 0.7,
+            "w_in": 11.9,
+            "h_in": 0.45,
+            "tipografia": "mono",
+            "tamano_pt": 18,
+            "color": "lima"
+          },
+          "titulo": {
+            "x_in": 0.7,
+            "y_in": 1.7,
+            "w_in": 11.9,
+            "h_in": 2.7,
+            "tipografia": "principal",
+            "peso": 700,
+            "tamano_pt": 72,
+            "color": "texto",
+            "nota": "Termina con el cursor '_' en lima."
+          },
+          "subtitulo": {
+            "x_in": 0.7,
+            "y_in": 4.45,
+            "w_in": 11.9,
+            "h_in": 0.6,
+            "tipografia": "principal",
+            "peso": 500,
+            "tamano_pt": 26,
+            "color": "texto_secundario"
+          },
+          "pie": {
+            "x_in": 0.7,
+            "y_in": 5.85,
+            "w_in": 11.9,
+            "h_in": 0.45,
+            "tipografia": "mono",
+            "tamano_pt": 16,
+            "color": "texto_secundario"
+          }
+        },
+        "decoracion": [
+          "franja_grupos"
+        ],
+        "sin": [
+          "etiqueta_bloque",
+          "numero_diapositiva"
+        ]
+      },
+      "frase": {
+        "uso": "Una idea para decir en voz alta.",
+        "campos": [
+          "frase",
+          "apoyo",
+          "ilustracion (opcional: 'escalera')",
+          "rotulos_ilustracion (opcional, con 'escalera')"
+        ],
+        "zonas": {
+          "frase": {
+            "x_in": 0.7,
+            "y_in": 1.6,
+            "w_in": 11.9,
+            "h_in": 2.6,
+            "tipografia": "principal",
+            "peso": 700,
+            "tamano_pt": 44,
+            "color": "texto",
+            "alineacion_vertical": "abajo"
+          },
+          "apoyo": {
+            "x_in": 0.7,
+            "y_in": 4.5,
+            "w_in": 11.9,
+            "h_in": 1.9,
+            "tipografia": "principal",
+            "peso": 500,
+            "tamano_pt": 24,
+            "color": "texto_secundario",
+            "nota": "Si es una lista, cada ítem en su línea precedido por '→ ' en lima."
+          }
+        },
+        "resaltado": "Texto en lima.",
+        "variante_con_ilustracion": "Con 'escalera': la frase y el apoyo ocupan 7.2 in de ancho a la izquierda y a la derecha se dibujan 5 escalones; los 2 de abajo con borde naranja punteado y sin relleno, los 3 de arriba rellenos en lima. El apoyo va en 22 pt, 7.0 in de ancho y 2.0 in de alto desde y = 4.4 in.",
+        "rotulos_ilustracion": {
+          "descripcion": "Rótulos opcionales de la escalera, en JetBrains Mono 14 pt.",
+          "escalones_ia": {
+            "color": "naranja",
+            "alineacion": "centrado",
+            "zona": "debajo de los 2 escalones punteados (x 7.96–10.16 in, y 6.35 in)"
+          },
+          "escalones_altos": {
+            "color": "lima",
+            "alineacion": "derecha",
+            "zona": "encima del escalón más alto, terminando en su borde derecho (x 8.2–12.62 in, y 2.1 in)"
+          }
+        }
+      },
+      "pregunta": {
+        "uso": "Preguntas que se dejan abiertas.",
+        "campos": [
+          "pregunta",
+          "apoyo",
+          "opciones (opcional)"
+        ],
+        "zonas": {
+          "pregunta": {
+            "x_in": 0.7,
+            "y_in": 1.5,
+            "w_in": 11.9,
+            "h_in": 3.0,
+            "tipografia": "principal",
+            "peso": 700,
+            "tamano_pt": 40,
+            "color": "texto",
+            "alineacion_vertical": "medio"
+          },
+          "opciones": {
+            "x_in": 0.7,
+            "y_in": 4.0,
+            "w_in": 11.9,
+            "h_in": 1.2,
+            "nota": "Hasta 3 recuadros iguales con borde blanco de 2 pt y texto mono 28 pt centrado."
+          },
+          "apoyo": {
+            "x_in": 0.7,
+            "y_in": 5.5,
+            "w_in": 11.9,
+            "h_in": 1.0,
+            "tipografia": "principal",
+            "peso": 500,
+            "tamano_pt": 24,
+            "color": "texto_secundario"
+          }
+        },
+        "resaltado": "Fondo lima con texto #07090B (efecto marcador)."
+      },
+      "caso": {
+        "uso": "Relatos (Sofía, abogados).",
+        "campos": [
+          "nombre_caso",
+          "texto",
+          "remate"
+        ],
+        "zonas": {
+          "rotulo": {
+            "x_in": 0.7,
+            "y_in": 1.25,
+            "w_in": 3.0,
+            "h_in": 0.4,
+            "tipografia": "mono",
+            "tamano_pt": 16,
+            "color": "texto_sobre_acento",
+            "fondo": "lima",
+            "texto_fijo": "CASO"
+          },
+          "nombre_caso": {
+            "x_in": 0.7,
+            "y_in": 1.85,
+            "w_in": 11.9,
+            "h_in": 1.0,
+            "tipografia": "principal",
+            "peso": 700,
+            "tamano_pt": 40,
+            "color": "lima"
+          },
+          "texto": {
+            "x_in": 0.7,
+            "y_in": 3.0,
+            "w_in": 11.0,
+            "h_in": 2.4,
+            "tipografia": "principal",
+            "peso": 500,
+            "tamano_pt": 26,
+            "color": "texto"
+          },
+          "remate": {
+            "x_in": 0.7,
+            "y_in": 5.6,
+            "w_in": 11.9,
+            "h_in": 0.9,
+            "tipografia": "principal",
+            "peso": 700,
+            "tamano_pt": 28,
+            "color": "lima"
+          }
+        },
+        "resaltado": "Texto en lima."
+      },
+      "dato": {
+        "uso": "Comparar dos cifras de un estudio.",
+        "campos": [
+          "titulo",
+          "valores[{valor, etiqueta, color, proporcion 0-1}]",
+          "texto",
+          "fuente"
+        ],
+        "zonas": {
+          "titulo": {
+            "x_in": 0.7,
+            "y_in": 1.2,
+            "w_in": 11.9,
+            "h_in": 0.8,
+            "tipografia": "principal",
+            "peso": 700,
+            "tamano_pt": 30,
+            "color": "texto"
+          },
+          "valores": {
+            "x_in": 0.7,
+            "y_in": 2.1,
+            "w_in": 11.9,
+            "h_in": 2.7,
+            "nota": "Dos columnas de 5.6 in. Número en 96 pt peso 700 del color indicado; debajo una barra de 0.16 in de alto cuyo ancho es proporcion × 5.0 in; debajo la etiqueta mono 18 pt en texto_secundario."
+          },
+          "texto": {
+            "x_in": 0.7,
+            "y_in": 5.15,
+            "w_in": 11.9,
+            "h_in": 1.0,
+            "tipografia": "principal",
+            "peso": 500,
+            "tamano_pt": 24,
+            "color": "texto"
+          },
+          "fuente": {
+            "x_in": 0.7,
+            "y_in": 6.3,
+            "w_in": 9.5,
+            "h_in": 0.4,
+            "tipografia": "mono",
+            "tamano_pt": 12,
+            "color": "texto_secundario",
+            "prefijo": "fuente: "
+          }
+        },
+        "regla_color": "Naranja = con IA o resultado preocupante. Lima = sin IA, pensar primero o resultado deseable."
+      },
+      "dato_columnas": {
+        "uso": "Dos grupos que se comparan con un texto corto cada uno (senior y junior).",
+        "campos": [
+          "titulo",
+          "columnas[{titulo, valor, texto, color}]",
+          "pregunta",
+          "fuente"
+        ],
+        "zonas": {
+          "titulo": {
+            "x_in": 0.7,
+            "y_in": 1.2,
+            "w_in": 11.9,
+            "h_in": 0.8,
+            "tipografia": "principal",
+            "peso": 700,
+            "tamano_pt": 30,
+            "color": "texto"
+          },
+          "columnas": {
+            "x_in": 0.7,
+            "y_in": 2.15,
+            "w_in": 11.9,
+            "h_in": 2.9,
+            "nota": "Dos tarjetas de 5.8 in con fondo 'superficie', borde de 2 pt del color de la columna, esquinas rectas. Dentro: título mono 18 pt del color, valor 54 pt peso 700 del color, texto 22 pt blanco."
+          },
+          "pregunta": {
+            "x_in": 0.7,
+            "y_in": 5.35,
+            "w_in": 11.9,
+            "h_in": 0.8,
+            "tipografia": "principal",
+            "peso": 700,
+            "tamano_pt": 28,
+            "color": "lima"
+          },
+          "fuente": {
+            "x_in": 0.7,
+            "y_in": 6.3,
+            "w_in": 9.5,
+            "h_in": 0.4,
+            "tipografia": "mono",
+            "tamano_pt": 12,
+            "color": "texto_secundario"
+          }
+        }
+      },
+      "lista": {
+        "uso": "De 2 a 4 puntos.",
+        "campos": [
+          "titulo",
+          "items[{texto, detalle?}]",
+          "pie"
+        ],
+        "zonas": {
+          "titulo": {
+            "x_in": 0.7,
+            "y_in": 1.2,
+            "w_in": 11.9,
+            "h_in": 0.9,
+            "tipografia": "principal",
+            "peso": 700,
+            "tamano_pt": 36,
+            "color": "texto"
+          },
+          "items": {
+            "x_in": 0.7,
+            "y_in": 2.35,
+            "w_in": 11.9,
+            "h_in": 3.9,
+            "nota": "Filas de igual alto. Número '01', '02'… en mono 22 pt lima a la izquierda (0.9 in de ancho); texto 26 pt peso 700 blanco; detalle opcional 20 pt peso 500 texto_secundario debajo."
+          },
+          "pie": {
+            "x_in": 0.7,
+            "y_in": 6.3,
+            "w_in": 11.9,
+            "h_in": 0.4,
+            "tipografia": "mono",
+            "tamano_pt": 14,
+            "color": "texto_secundario"
+          }
+        },
+        "maximo_items": 4,
+        "resaltado": "Texto en lima."
+      },
+      "lista_doble": {
+        "uso": "Hasta 10 ítems cortos numerados, en dos columnas.",
+        "campos": [
+          "titulo",
+          "items[8]"
+        ],
+        "zonas": {
+          "titulo": {
+            "x_in": 0.7,
+            "y_in": 1.2,
+            "w_in": 11.9,
+            "h_in": 0.9,
+            "tipografia": "principal",
+            "peso": 700,
+            "tamano_pt": 36,
+            "color": "texto"
+          },
+          "items": {
+            "x_in": 0.7,
+            "y_in": 2.35,
+            "w_in": 11.9,
+            "h_in": 4.0,
+            "nota": "Dos columnas de 5.8 in con separación 0.3 in. Cada ítem en una tarjeta de fondo 'superficie' de 0.8 in de alto: número mono 24 pt lima ('01'…'08') y texto 22 pt peso 700 blanco."
+          }
+        }
+      },
+      "grupos": {
+        "uso": "Presentar 4 grupos o 4 columnas.",
+        "campos": [
+          "titulo",
+          "tarjetas[{rotulo, texto, color}]",
+          "pie"
+        ],
+        "zonas": {
+          "titulo": {
+            "x_in": 0.7,
+            "y_in": 1.2,
+            "w_in": 11.9,
+            "h_in": 0.9,
+            "tipografia": "principal",
+            "peso": 700,
+            "tamano_pt": 34,
+            "color": "texto"
+          },
+          "tarjetas": {
+            "x_in": 0.7,
+            "y_in": 2.25,
+            "w_in": 11.9,
+            "h_in": 3.8,
+            "nota": "Grilla 2 × 2 (separación 0.3 in). Cada tarjeta (1.75 in de alto): fondo 'superficie', barra vertical de 0.12 in a la izquierda del color, rótulo mono 18 pt del color, texto 20 pt peso 700 blanco."
+          },
+          "pie": {
+            "x_in": 0.7,
+            "y_in": 6.2,
+            "w_in": 10.0,
+            "h_in": 0.5,
+            "tipografia": "principal",
+            "peso": 500,
+            "tamano_pt": 20,
+            "color": "texto_secundario"
+          }
+        },
+        "variante_columnas": "Con 'disposicion': 'columnas', las 4 tarjetas van en una fila (4 columnas de 2.75 in) y el pie puede ser una lista corta.",
+        "nota_colores": "En la variante columnas cada tarjeta puede llevar su propio color."
+      },
+      "grupo": {
+        "uso": "La diapositiva de un grupo, para fotografiar.",
+        "campos": [
+          "grupo (A-D)",
+          "pregunta_partida",
+          "y_si[3]"
+        ],
+        "zonas": {
+          "rotulo": {
+            "x_in": 0.7,
+            "y_in": 1.2,
+            "w_in": 11.9,
+            "h_in": 0.6,
+            "tipografia": "mono",
+            "tamano_pt": 22,
+            "color": "color del grupo",
+            "formato": "GRUPO A"
+          },
+          "pregunta_partida": {
+            "x_in": 0.7,
+            "y_in": 1.85,
+            "w_in": 11.9,
+            "h_in": 1.5,
+            "tipografia": "principal",
+            "peso": 700,
+            "tamano_pt": 36,
+            "color": "texto"
+          },
+          "y_si": {
+            "x_in": 0.7,
+            "y_in": 3.55,
+            "w_in": 11.9,
+            "h_in": 3.0,
+            "nota": "Tres filas. A la izquierda '¿Y si…?' no se repite: cada fila empieza con un número mono 20 pt del color del grupo y sigue texto 22 pt peso 500 blanco."
+          }
+        },
+        "decoracion": "Barra superior del color del grupo, de borde a borde, 0.14 in de alto, en y = 0."
+      },
+      "ia": {
+        "uso": "Representar una consulta a la IA.",
+        "campos": [
+          "encabezado",
+          "consigna",
+          "pie"
+        ],
+        "zonas": {
+          "encabezado": {
+            "x_in": 0.7,
+            "y_in": 1.2,
+            "w_in": 11.9,
+            "h_in": 0.9,
+            "tipografia": "principal",
+            "peso": 700,
+            "tamano_pt": 36,
+            "color": "lima"
+          },
+          "ventana": {
+            "x_in": 0.7,
+            "y_in": 2.4,
+            "w_in": 11.9,
+            "h_in": 3.2,
+            "nota": "Recuadro con fondo 'superficie' y borde naranja de 2.5 pt. Barra de título interna de 0.45 in con tres círculos de 0.14 in (naranja, línea, línea) y el rótulo mono 'chat'. Dentro, '> ' en naranja seguido de la consigna en mono 30 pt blanco y un cursor '▍' naranja."
+          },
+          "pie": {
+            "x_in": 0.7,
+            "y_in": 5.9,
+            "w_in": 11.9,
+            "h_in": 0.6,
+            "tipografia": "principal",
+            "peso": 500,
+            "tamano_pt": 20,
+            "color": "texto_secundario"
+          }
+        }
+      },
+      "texto_biblico": {
+        "uso": "Mostrar un pasaje completo.",
+        "campos": [
+          "referencia",
+          "version",
+          "texto"
+        ],
+        "zonas": {
+          "referencia": {
+            "x_in": 0.7,
+            "y_in": 1.2,
+            "w_in": 8.0,
+            "h_in": 0.7,
+            "tipografia": "principal",
+            "peso": 700,
+            "tamano_pt": 30,
+            "color": "lima"
+          },
+          "version": {
+            "x_in": 9.6,
+            "y_in": 1.3,
+            "w_in": 3.0,
+            "h_in": 0.5,
+            "tipografia": "mono",
+            "tamano_pt": 16,
+            "color": "texto_secundario",
+            "alineacion": "derecha"
+          },
+          "texto": {
+            "x_in": 0.7,
+            "y_in": 2.1,
+            "w_in": 11.9,
+            "h_in": 4.3,
+            "tipografia": "principal",
+            "peso": 500,
+            "tamano_pt": 34,
+            "color": "texto",
+            "interlineado": 1.3
+          }
+        },
+        "resaltado": "Palabra en lima y peso 700."
+      },
+      "en_vivo": {
+        "uso": "Diapositiva para completar en el momento (a mano en la presentación, o como guía).",
+        "campos": [
+          "titulo",
+          "renglones"
+        ],
+        "zonas": {
+          "rotulo": {
+            "x_in": 0.7,
+            "y_in": 1.2,
+            "w_in": 2.2,
+            "h_in": 0.4,
+            "tipografia": "mono",
+            "tamano_pt": 16,
+            "color": "texto_sobre_acento",
+            "fondo": "lima",
+            "texto_fijo": "● EN VIVO"
+          },
+          "titulo": {
+            "x_in": 0.7,
+            "y_in": 1.8,
+            "w_in": 11.9,
+            "h_in": 0.9,
+            "tipografia": "principal",
+            "peso": 700,
+            "tamano_pt": 36,
+            "color": "texto"
+          },
+          "renglones": {
+            "x_in": 0.7,
+            "y_in": 3.0,
+            "w_in": 11.9,
+            "h_in": 3.4,
+            "nota": "N líneas horizontales de 1 pt color 'linea', a igual distancia, con un número mono 14 pt texto_secundario al inicio."
+          }
+        }
+      },
+      "qr": {
+        "uso": "Código QR solo, a pantalla casi completa (las preguntas van en la diapositiva siguiente). Si hay preguntas, se muestran a la derecha del QR.",
+        "campos": [
+          "titulo",
+          "url",
+          "preguntas[3]",
+          "pie"
+        ],
+        "zonas": {
+          "qr": {
+            "x_in": 0.7,
+            "y_in": 1.3,
+            "w_in": 4.6,
+            "h_in": 4.6,
+            "nota": "Recuadro blanco con el código QR en negro. Si no hay URL, un recuadro con borde lima punteado y el texto 'QR' en mono."
+          },
+          "titulo": {
+            "x_in": 5.8,
+            "y_in": 1.3,
+            "w_in": 6.8,
+            "h_in": 0.8,
+            "tipografia": "principal",
+            "peso": 700,
+            "tamano_pt": 32,
+            "color": "texto"
+          },
+          "preguntas": {
+            "x_in": 5.8,
+            "y_in": 2.3,
+            "w_in": 6.8,
+            "h_in": 3.6,
+            "nota": "Tres filas con número mono lima y texto 22 pt peso 500 blanco."
+          },
+          "pie": {
+            "x_in": 0.7,
+            "y_in": 6.25,
+            "w_in": 10.0,
+            "h_in": 0.45,
+            "tipografia": "mono",
+            "tamano_pt": 16,
+            "color": "lima"
+          }
+        }
+      },
+      "recursos": {
+        "uso": "Cierre con las fuentes citadas y un QR al material.",
+        "campos": [
+          "titulo",
+          "items[{texto, detalle}]",
+          "url",
+          "rotulo_qr"
+        ],
+        "zonas": {
+          "titulo": {
+            "x_in": 0.7,
+            "y_in": 1.2,
+            "w_in": 8.2,
+            "h_in": 0.8,
+            "tipografia": "principal",
+            "peso": 700,
+            "tamano_pt": 32,
+            "color": "texto"
+          },
+          "items": {
+            "x_in": 0.7,
+            "y_in": 2.1,
+            "w_in": 8.2,
+            "h_in": 4.3,
+            "nota": "Filas de igual alto (máx. 0.72 in). Texto 18 pt peso 700 blanco; detalle 15 pt texto_secundario debajo. Línea superior color 'linea'."
+          },
+          "qr": {
+            "x_in": 9.4,
+            "y_in": 1.3,
+            "w_in": 3.2,
+            "h_in": 3.2,
+            "nota": "Recuadro blanco con el QR de 'url' (en el .pptx, recuadro lima punteado con 'QR')."
+          },
+          "rotulo_qr": {
+            "x_in": 9.1,
+            "y_in": 4.7,
+            "w_in": 3.5,
+            "h_in": 0.4,
+            "tipografia": "mono",
+            "tamano_pt": 16,
+            "color": "lima",
+            "alineacion": "centro"
+          },
+          "url": {
+            "x_in": 9.1,
+            "y_in": 5.1,
+            "w_in": 3.5,
+            "h_in": 0.7,
+            "tipografia": "mono",
+            "tamano_pt": 14,
+            "color": "texto_secundario",
+            "alineacion": "centro"
+          }
+        }
+      }
+    },
+    "reglas": [
+      "Una sola idea fuerte por diapositiva; el color va en la palabra o el dato clave, nunca en todo el texto.",
+      "Nunca usar tamaños menores a 14 pt.",
+      "Texto alineado a la izquierda; no centrar párrafos.",
+      "Los colores flúor de grupo solo se usan para identificar grupos (A lima, B fucsia, C celeste, D verde).",
+      "El naranja se reserva para todo lo que represente a la IA o un resultado 'con IA'.",
+      "Sin degradados, sombras ni efectos de brillo: superficies planas.",
+      "Las etiquetas de bloque, rótulos y numeraciones van en JetBrains Mono y en minúsculas, salvo los rótulos fijos (CASO, EN VIVO, GRUPO X)."
+    ]
+  },
+  "contenido": {
+    "bloques": [
+      {
+        "id": "01",
+        "nombre": "intro",
+        "minutos": 5
+      },
+      {
+        "id": "02",
+        "nombre": "compartiendo preguntas",
+        "minutos": 10
+      },
+      {
+        "id": "03",
+        "nombre": "presentando el tema",
+        "minutos": 5
+      },
+      {
+        "id": "04",
+        "nombre": "el caso",
+        "minutos": 5
+      },
+      {
+        "id": "05",
+        "nombre": "primera ronda",
+        "minutos": 10
+      },
+      {
+        "id": "06",
+        "nombre": "puesta en común",
+        "minutos": 5
+      },
+      {
+        "id": "07",
+        "nombre": "realidad del impacto",
+        "minutos": 10
+      },
+      {
+        "id": "08",
+        "nombre": "segunda ronda",
+        "minutos": 10
+      },
+      {
+        "id": "09",
+        "nombre": "puesta en común",
+        "minutos": 10
+      },
+      {
+        "id": "10",
+        "nombre": "hebreos 10 en vivo",
+        "minutos": 10
+      },
+      {
+        "id": "11",
+        "nombre": "sobre las preguntas del inicio",
+        "minutos": 10
+      },
+      {
+        "id": "12",
+        "nombre": "cierre",
+        "minutos": 0
+      }
+    ],
+    "diapositivas": [
+      {
+        "id": "d01",
+        "n": 1,
+        "bloque": "01",
+        "plantilla": "portada",
+        "etiqueta": "> congreso_legado / taller",
+        "titulo": "IA, iglesia\ny legado",
+        "subtitulo": "La inteligencia artificial en la misión de Dios",
+        "pie": "Efesios 4:1–2",
+        "notas": "Bienvenida y presentación breve: más de 20 años en desarrollo de software; uso la IA a diario."
+      },
+      {
+        "id": "d02",
+        "n": 2,
+        "bloque": "01",
+        "plantilla": "pregunta",
+        "pregunta": "¿Quién le preguntó algo a **una IA esta semana**?",
+        "apoyo": "¿Para qué?",
+        "notas": "A mano alzada. Escuchar dos o tres usos."
+      },
+      {
+        "id": "d03",
+        "n": 3,
+        "bloque": "01",
+        "plantilla": "frase",
+        "frase": "La pregunta no será si la IA es “buena” o “mala”, sino **qué hacemos y qué nos hacemos** al usarla.",
+        "notas": "No venimos a armar una lista de usos permitidos y prohibidos."
+      },
+      {
+        "id": "d04",
+        "n": 4,
+        "bloque": "01",
+        "plantilla": "lista",
+        "titulo": "Las preguntas que nos trajeron",
+        "items": [
+          {
+            "texto": "¿La abrazamos, la tememos o la ignoramos?"
+          },
+          {
+            "texto": "¿Puede una máquina reemplazar el discernimiento, el discipulado o la predicación?"
+          },
+          {
+            "texto": "¿Qué oportunidades y riesgos trae?"
+          }
+        ],
+        "notas": "Son las preguntas de la organización. Las vamos a responder al final (bloque 11).",
+        "pasos": true
+      },
+      {
+        "id": "d05",
+        "n": 5,
+        "bloque": "01",
+        "plantilla": "frase",
+        "frase": "Las respondemos cada uno.\nPero **nunca andamos solos**.",
+        "apoyo": "De eso también se trata el legado.",
+        "notas": "Lo que decidimos y hacemos nunca nos alcanza solo a nosotros."
+      },
+      {
+        "id": "d06",
+        "n": 6,
+        "bloque": "01",
+        "plantilla": "lista",
+        "titulo": "Qué me gustaría que te lleves hoy",
+        "items": [
+          {
+            "texto": "Algo que aprendiste"
+          },
+          {
+            "texto": "Una pregunta que te quede dando vueltas"
+          },
+          {
+            "texto": "Algo concreto para aplicar o seguir investigando"
+          }
+        ],
+        "notas": "Aclarar: no se va a pedir a nadie compartir conversaciones privadas; trabajamos con casos ficticios."
+      },
+      {
+        "id": "d07",
+        "n": 7,
+        "bloque": "02",
+        "plantilla": "qr",
+        "titulo": "Escaneá y respondé",
+        "url": null,
+        "preguntas": [],
+        "pie": "",
+        "notas": "Respaldo: responder de a dos desde un mismo celular. Solo el QR: las preguntas están en la diapositiva siguiente."
+      },
+      {
+        "id": "d07b",
+        "n": 8,
+        "bloque": "02",
+        "plantilla": "lista",
+        "titulo": "Escaneá y respondé",
+        "items": [
+          {
+            "texto": "¿Qué pregunta que tengo me gustaría que conteste este taller?"
+          },
+          {
+            "texto": "¿Qué temor o preocupación me genera la IA?"
+          },
+          {
+            "texto": "¿Qué oportunidad o peligro veo en relación a la IA y la fe?"
+          }
+        ],
+        "pie": "anónimo · 2 minutos",
+        "notas": "Las mismas tres preguntas que responden en el celular. Dejarla proyectada mientras responden."
+      },
+      {
+        "id": "d08",
+        "n": 9,
+        "bloque": "02",
+        "plantilla": "en_vivo",
+        "titulo": "Lo que trajeron",
+        "renglones": 4,
+        "notas": "Leer 3 o 4 respuestas de la pregunta 1, sin nombres."
+      },
+      {
+        "id": "d09",
+        "n": 10,
+        "bloque": "03",
+        "plantilla": "frase",
+        "frase": "Una herramienta **no nos deja iguales**.",
+        "apoyo": "Quien usa siempre el GPS, deja de aprender a orientarse.",
+        "notas": "Algunas prácticas ejercitan capacidades; otras nos acostumbran a delegarlas."
+      },
+      {
+        "id": "d10",
+        "n": 11,
+        "bloque": "03",
+        "plantilla": "frase",
+        "frase": "El reemplazo rara vez es **dramático**.",
+        "apoyo": [
+          "Consultar primero a la IA",
+          "Esperar respuesta inmediata",
+          "Confiar más en lo bien redactado"
+        ],
+        "notas": "Nadie dice 'reemplacé a Dios por un chatbot'. Pero los hábitos se forman igual, aunque la máquina no diga nada falso."
+      },
+      {
+        "id": "d11",
+        "n": 12,
+        "bloque": "03",
+        "plantilla": "pregunta",
+        "pregunta": "¿Qué clase de cristiano estoy **aprendiendo a ser** mientras uso IA, y qué les estoy dejando a quienes caminan conmigo?",
+        "notas": "Explicar las cuatro partes: qué clase de cristiano · estoy aprendiendo a ser · mientras uso · qué les estoy dejando (el legado)."
+      },
+      {
+        "id": "d12",
+        "n": 13,
+        "bloque": "04",
+        "plantilla": "caso",
+        "nombre_caso": "La reflexión de veinte segundos",
+        "texto": "Sofía (19) prepara la reflexión del grupo con IA. Revisa las citas y corrige detalles. Es clara, bíblica y ayuda a varios. Casi no estudió el texto.",
+        "remate": "Desde entonces, lo hace todas las semanas.",
+        "notas": "Leer despacio. La IA funcionó bien: la discusión no se resuelve con 'la IA se equivoca'."
+      },
+      {
+        "id": "d13",
+        "n": 14,
+        "bloque": "04",
+        "plantilla": "pregunta",
+        "pregunta": "¿Sofía hizo algo mal?",
+        "opciones": [
+          "SÍ",
+          "NO",
+          "DEPENDE"
+        ],
+        "apoyo": "¿Cambia algo que lo haga **todas las semanas**?",
+        "notas": "A mano alzada, sin debatir ni corregir. Es la 'primera respuesta' que los grupos van a examinar."
+      },
+      {
+        "id": "d14",
+        "n": 15,
+        "bloque": "05",
+        "plantilla": "grupos",
+        "titulo": "Cuatro grupos, cuatro preguntas",
+        "tarjetas": [
+          {
+            "rotulo": "grupo A",
+            "color": "lima",
+            "texto": "¿Qué vale la pena aprender aunque podamos delegarlo?"
+          },
+          {
+            "rotulo": "grupo B",
+            "color": "fucsia",
+            "texto": "¿Puede una IA reemplazar el discernimiento espiritual?"
+          },
+          {
+            "rotulo": "grupo C",
+            "color": "celeste",
+            "texto": "¿Está bien buscar acompañamiento espiritual en una IA?"
+          },
+          {
+            "rotulo": "grupo D",
+            "color": "verde",
+            "texto": "¿La IA nos ayuda a crecer o nos vuelve dependientes?"
+          }
+        ],
+        "pie": "Saquen una foto a la diapositiva de su grupo.",
+        "notas": "4 grupos de 5 a 7, mezclando edades.\nGrupos (no mostrar todavía): A · formativa / B · pastoral / C · comunitaria / D · identidad."
+      },
+      {
+        "id": "d15",
+        "n": 16,
+        "bloque": "05",
+        "plantilla": "grupo",
+        "grupo": "A",
+        "pregunta_partida": "¿Qué vale la pena aprender aunque podamos delegarlo?",
+        "y_si": [
+          "¿Y si la reflexión de la IA es excelente? ¿Qué recibió el grupo? ¿Y Sofía?",
+          "¿Y si alguien le hace a Sofía una pregunta difícil sobre el pasaje?",
+          "¿Y si lo hace así durante tres años? ¿Qué clase de líder va a ser?"
+        ],
+        "notas": "Llegada esperada: si puedo conseguir una buena reflexión bíblica en veinte segundos, ¿para qué pasar una hora estudiando?\nCategoría (no mostrar todavía): A · formativa."
+      },
+      {
+        "id": "d16",
+        "n": 17,
+        "bloque": "05",
+        "plantilla": "grupo",
+        "grupo": "B",
+        "pregunta_partida": "¿Puede una IA reemplazar el discernimiento espiritual?",
+        "y_si": [
+          "¿Y si la IA da un consejo sensato y bien fundamentado en la Biblia?",
+          "¿Y si el pastor o líder aconseja otra cosa? ¿A quién escuchan?",
+          "¿Y si el consejo sale mal? ¿Quién se hace responsable?"
+        ],
+        "notas": "Llegada esperada: si una IA me da un consejo sensato y bíblico, distinto al de mi pastor o líder, ¿cómo evalúo los dos?\nCategoría (no mostrar todavía): B · pastoral."
+      },
+      {
+        "id": "d17",
+        "n": 18,
+        "bloque": "05",
+        "plantilla": "grupo",
+        "grupo": "C",
+        "pregunta_partida": "¿Está bien buscar acompañamiento espiritual en una IA?",
+        "y_si": [
+          "¿Y si alguien del grupo prefiere contarle sus dudas a la IA? ¿Qué encuentra ahí?",
+          "¿Y si la IA le responde bien? ¿Qué no le puede dar, igual?",
+          "¿Y si el problema es el grupo? ¿Qué tendría que cambiar?"
+        ],
+        "notas": "Llegada esperada: ¿por qué alguien preferiría contarle sus dudas de fe a una IA antes que a su iglesia?\nCategoría (no mostrar todavía): C · comunitaria."
+      },
+      {
+        "id": "d18",
+        "n": 19,
+        "bloque": "05",
+        "plantilla": "grupo",
+        "grupo": "D",
+        "pregunta_partida": "¿La IA nos ayuda a crecer o nos vuelve dependientes?",
+        "y_si": [
+          "¿Y si la IA prepara reflexiones mejores que las de Sofía? ¿Para qué la necesita el grupo?",
+          "¿Y si te gusta servir escribiendo, diseñando o explicando, y la IA lo hace mejor?",
+          "¿Y si la iglesia empieza a valorar a las personas por lo que producen?"
+        ],
+        "notas": "Llegada esperada: si una IA escribe, diseña o explica mejor que yo, ¿qué pasa con mi valor y con mi lugar en la iglesia?\nCategoría (no mostrar todavía): D · identidad."
+      },
+      {
+        "id": "d19",
+        "rev": 2,
+        "n": 20,
+        "bloque": "05",
+        "plantilla": "lista",
+        "titulo": "Tres pasos",
+        "items": [
+          {
+            "texto": "Respondan rápido",
+            "detalle": "Cada uno, una frase, antes de hablar · 2 min"
+          },
+          {
+            "texto": "Pongan a prueba su respuesta",
+            "detalle": "Usen los 3 «¿Y si…?» de la foto de su grupo · 6 min"
+          },
+          {
+            "texto": "¿En cuál «¿Y si…?» **ya no les sirvió** su respuesta?",
+            "detalle": "Cuéntennos cuál y por qué · 2 min"
+          }
+        ],
+        "pie": "pistas: la razón que dieron ya no aplica · no se ponen de acuerdo · aparece un «depende»",
+        "notas": "Queda proyectada durante el trabajo en grupos. Explicación en una frase: «Primero respondan. Después usen sus ¿Y si…? para poner a prueba su respuesta. Y fíjense en cuál ya no les sirvió para contestar». Ejemplo (grupo B): responden «No, porque la IA se equivoca»; en el ¿Y si…? «la IA da un consejo sensato y bíblico» esa razón ya no aplica. Eso es lo que comparten. En el bloque 6 el facilitador lo convierte en «la pregunta de verdad». Recorrer los grupos."
+      },
+      {
+        "id": "d20",
+        "n": 21,
+        "bloque": "06",
+        "plantilla": "lista",
+        "titulo": "Cada grupo comparte",
+        "items": [
+          {
+            "texto": "«Nuestra primera respuesta fue…»"
+          },
+          {
+            "texto": "«**Ya no nos sirvió** en el «¿Y si…?» de… porque…»"
+          }
+        ],
+        "pie": "45 segundos por grupo",
+        "notas": "Cada grupo cuenta su primera respuesta y en qué «¿Y si…?» ya no les sirvió, y por qué. Después formulo en voz alta y escribo en la hoja grande: 'Entonces, la pregunta de verdad es…'.",
+        "rev": 2
+      },
+      {
+        "id": "d21",
+        "n": 22,
+        "bloque": "06",
+        "plantilla": "grupos",
+        "titulo": "Entonces, la pregunta de verdad es…",
+        "tarjetas": [
+          {
+            "rotulo": "A · formativa",
+            "color": "lima",
+            "texto": "Si consigo una buena reflexión en 20 segundos, ¿para qué estudiar una hora?"
+          },
+          {
+            "rotulo": "B · pastoral",
+            "color": "fucsia",
+            "texto": "Si la IA y mi pastor aconsejan distinto, ¿cómo evalúo los dos?"
+          },
+          {
+            "rotulo": "C · comunitaria",
+            "color": "celeste",
+            "texto": "¿Por qué alguien preferiría contarle sus dudas a una IA y no a su iglesia?"
+          },
+          {
+            "rotulo": "D · identidad",
+            "color": "verde",
+            "texto": "Si una IA lo hace mejor que yo, ¿qué pasa con mi valor y mi lugar?"
+          }
+        ],
+        "notas": "Opcional: mostrar después de formularlas en voz alta con las palabras de los grupos.",
+        "pasos": true
+      },
+      {
+        "id": "d22",
+        "n": 23,
+        "bloque": "07",
+        "plantilla": "caso",
+        "nombre_caso": "133 abogados · 3 meses",
+        "texto": "Dos tercios trabajaron con un asistente de IA y el resto sin IA. Con IA, el trabajo salió mejor. Al final, todos tuvieron que revisar un trabajo por su cuenta.",
+        "remate": "Esta vez, sin IA.",
+        "notas": "Autor y otros, 2026 (NBER w35720). Contarlo como historia."
+      },
+      {
+        "id": "d23",
+        "n": 24,
+        "bloque": "07",
+        "plantilla": "dato_columnas",
+        "titulo": "¿Qué pasó cuando les sacaron la IA?",
+        "columnas": [
+          {
+            "titulo": "con experiencia (7+ años)",
+            "valor": "mejoraron",
+            "texto": "La usaban para poner a prueba su propio razonamiento.",
+            "color": "lima"
+          },
+          {
+            "titulo": "nuevos",
+            "valor": "no mejoraron",
+            "texto": "En promedio no avanzaron: unos crecieron y otros quedaron atrás.",
+            "color": "naranja"
+          }
+        ],
+        "pregunta": "¿Por qué creen que pasó eso?",
+        "fuente": "Autor et al., 2026 · ensayo aleatorizado con 133 abogados de patentes",
+        "notas": "Los senior describieron la IA como un 'auditor lógico'. Escuchar 2 o 3 respuestas."
+      },
+      {
+        "id": "d24",
+        "n": 25,
+        "bloque": "07",
+        "plantilla": "dato",
+        "titulo": "Aprender a programar con algo nuevo",
+        "valores": [
+          {
+            "valor": "50%",
+            "etiqueta": "aprendieron con IA",
+            "color": "naranja",
+            "proporcion": 0.5
+          },
+          {
+            "valor": "67%",
+            "etiqueta": "aprendieron sin IA",
+            "color": "lima",
+            "proporcion": 0.67
+          }
+        ],
+        "texto": "La mayor diferencia: encontrar y corregir errores.",
+        "fuente": "Anthropic, 2026 · 52 programadores",
+        "notas": "Quienes hacían preguntas para entender sacaron mejores resultados que quienes delegaban todo."
+      },
+      {
+        "id": "d25",
+        "n": 26,
+        "bloque": "07",
+        "plantilla": "dato",
+        "titulo": "Con IA rendimos más… y nos creemos mejores",
+        "valores": [
+          {
+            "valor": "+3",
+            "etiqueta": "lo que mejoraron",
+            "color": "lima",
+            "proporcion": 0.6
+          },
+          {
+            "valor": "+4",
+            "etiqueta": "lo que creyeron mejorar",
+            "color": "naranja",
+            "proporcion": 0.8
+          }
+        ],
+        "texto": "Usar IA mejora el resultado, pero nos hace sobreestimar lo que sabemos.",
+        "fuente": "Fernandes et al., Computers in Human Behavior, 2026 · razonamiento lógico",
+        "notas": "Puntos en una prueba de razonamiento del LSAT. Se replicó con 452 personas."
+      },
+      {
+        "id": "d26",
+        "n": 27,
+        "bloque": "07",
+        "plantilla": "dato",
+        "titulo": "Cuando la IA se equivocaba…",
+        "valores": [
+          {
+            "valor": "53,5%",
+            "etiqueta": "acertaron · pensaron primero",
+            "color": "lima",
+            "proporcion": 0.535
+          },
+          {
+            "valor": "37,3%",
+            "etiqueta": "acertaron · vieron primero a la IA",
+            "color": "naranja",
+            "proporcion": 0.373
+          }
+        ],
+        "texto": "Quienes pensaron primero se dejaron engañar menos.",
+        "fuente": "Dong Yan, Frontiers in Psychology, 2026 · 218 futuros docentes",
+        "notas": "Cuando la IA tenía razón, pensar primero no les costó casi nada (65,2% frente a 66,2%)."
+      },
+      {
+        "id": "d27",
+        "rev": 2,
+        "n": 28,
+        "bloque": "07",
+        "plantilla": "frase",
+        "ilustracion": "escalera",
+        "frase": "La paradoja de la **escalera**",
+        "apoyo": "La IA hace muy bien los primeros escalones. Pero son esos escalones los que nos forman para llegar arriba.\nSi los saltamos, el trabajo sale bien… y nadie aprende a subir.",
+        "rotulos_ilustracion": {
+          "escalones_ia": "lo que hace la IA",
+          "escalones_altos": "criterio · juicio · discernimiento"
+        },
+        "notas": "Los abogados con experiencia mejoraron porque ya habían subido la escalera: años de redactar, equivocarse y corregir les dieron criterio para evaluar a la IA. Los nuevos están en los primeros escalones, y eso es justo lo que la IA hace mejor (el primer borrador, el caso sencillo, el resumen). La paradoja: la IA ayuda más a quien ya sabe y puede impedir que otros lleguen a saber. En la iglesia, preparar una reflexión o estudiar un pasaje es el escalón que forma a los futuros líderes. Idea de fondo: la calidad del producto no es la calidad de la mente que lo produce. Conecta con la diapositiva siguiente: ¿quiénes son los abogados nuevos?"
+      },
+      {
+        "id": "d28",
+        "n": 29,
+        "bloque": "07",
+        "plantilla": "pregunta",
+        "pregunta": "En la iglesia, ¿quiénes son los **abogados nuevos**?",
+        "notas": "Dejarlo en el aire: conecta con la segunda ronda."
+      },
+      {
+        "id": "d29",
+        "n": 30,
+        "bloque": "08",
+        "plantilla": "lista_doble",
+        "titulo": "8 tareas",
+        "items": [
+          "Armar el flyer del campamento",
+          "Organizar el calendario de servicio",
+          "Resumir un comentario bíblico",
+          "Traducir un estudio",
+          "Preguntas para el grupo pequeño",
+          "Interpretar un pasaje difícil",
+          "La reflexión de Sofía",
+          "Aconsejar a un amigo en crisis",
+          "Otros ¿?"
+        ],
+        "notas": "Cada grupo anota en un celular en qué columna va cada número (diapositiva siguiente). 5 min."
+      },
+      {
+        "id": "d30",
+        "n": 31,
+        "bloque": "08",
+        "plantilla": "grupos",
+        "disposicion": "columnas",
+        "titulo": "¿Dónde va cada tarea?",
+        "tarjetas": [
+          {
+            "rotulo": "columna 1",
+            "color": "lima",
+            "texto": "Delegar con libertad"
+          },
+          {
+            "rotulo": "columna 2",
+            "color": "fucsia",
+            "texto": "Delegar, pero verificar"
+          },
+          {
+            "rotulo": "columna 3",
+            "color": "celeste",
+            "texto": "Primero nosotros, la IA después"
+          },
+          {
+            "rotulo": "columna 4",
+            "color": "verde",
+            "texto": "Lo hacemos nosotros, sin IA"
+          }
+        ],
+        "pie": [
+          "¿Quiénes son los «abogados nuevos»?",
+          "¿Cómo usarían la IA *después*, como crítico y no como autor?",
+          "¿Qué se perdería si usáramos IA en la columna 4?"
+        ],
+        "notas": "Si no se ponen de acuerdo, que anoten el desacuerdo: es lo más valioso. La discusión más rica suele estar entre la columna 3 y la 4."
+      },
+      {
+        "id": "d31",
+        "n": 32,
+        "bloque": "09",
+        "plantilla": "lista",
+        "titulo": "Tres criterios",
+        "items": [
+          {
+            "texto": "¿Busco un **producto** o un **proceso**?",
+            "detalle": "Un flyer es un producto. Entender un pasaje me forma."
+          },
+          {
+            "texto": "¿Quién tiene la **primera palabra**?",
+            "detalle": "En lo formativo, primero pienso yo; la IA, después."
+          },
+          {
+            "texto": "¿Lo puedo **defender sin la IA** delante?",
+            "detalle": "Si no lo puedo explicar, todavía no es mío."
+          }
+        ],
+        "notas": "Antes: cada grupo cuenta qué tarea le costó más ubicar y qué puso en la cuarta columna."
+      },
+      {
+        "id": "d32",
+        "n": 33,
+        "bloque": "09",
+        "plantilla": "frase",
+        "frase": "La IA tiende a **aplanar** lo que creemos.",
+        "apoyo": "Mezcla tradiciones y pierde matices: bautismo, ordenanzas, iglesia. Si solo leemos síntesis, olvidamos *por qué* creemos lo que creemos.",
+        "notas": "Un estudio de 2026 con 576 afirmaciones doctrinales de once tradiciones encontró ese patrón (AI and Ethics)."
+      },
+      {
+        "id": "d33",
+        "n": 34,
+        "bloque": "10",
+        "plantilla": "ia",
+        "encabezado": "Primero pensamos nosotros.",
+        "consigna": "¿Qué enseña Hebreos 10:24–25?",
+        "pie": "La consulta se hace en vivo. No leemos la respuesta todavía.",
+        "notas": "Escribir la consigna en ChatGPT frente a todos, dejar que responda y minimizar la ventana. Tener captura de respaldo."
+      },
+      {
+        "id": "d34a",
+        "n": 35,
+        "bloque": "10",
+        "plantilla": "texto_biblico",
+        "referencia": "Hebreos 10:24–25",
+        "version": "RV60",
+        "texto": "Y considerémonos unos a otros para estimularnos al amor y a las buenas obras; no dejando de congregarnos, como algunos tienen por costumbre, sino exhortándonos; y tanto más, cuanto veis que aquel día se acerca.",
+        "notas": "Primero leer el texto completo, sin marcas. En la diapositiva siguiente aparecen los verbos resaltados."
+      },
+      {
+        "id": "d34",
+        "n": 36,
+        "bloque": "10",
+        "plantilla": "texto_biblico",
+        "referencia": "Hebreos 10:24–25",
+        "version": "RV60",
+        "texto": "Y **considerémonos** unos a otros para **estimularnos** al amor y a las buenas obras; no dejando de **congregarnos**, como algunos tienen por costumbre, sino **exhortándonos**; y tanto más, cuanto veis que aquel día se acerca.",
+        "notas": "Pedir que identifiquen los verbos y anotarlos en la hoja grande. Verificar el texto con la Biblia antes del taller."
+      },
+      {
+        "id": "d35",
+        "n": 37,
+        "bloque": "10",
+        "plantilla": "texto_biblico",
+        "referencia": "Hebreos 10:24–25",
+        "version": "NTV",
+        "texto": "Pensemos en maneras de motivarnos unos a otros a realizar actos de amor y buenas acciones. Y no dejemos de congregarnos, como lo hacen algunos, sino animémonos unos a otros, sobre todo ahora que el día de su regreso se acerca.",
+        "notas": "El mismo texto en lenguaje actual. Verificar el texto con la Biblia antes del taller."
+      },
+      {
+        "id": "d36",
+        "n": 38,
+        "bloque": "10",
+        "plantilla": "lista",
+        "titulo": "Cuatro movimientos",
+        "items": [
+          {
+            "texto": "Considerarnos",
+            "detalle": "Prestar atención a personas concretas"
+          },
+          {
+            "texto": "Estimularnos",
+            "detalle": "Provocarnos al amor y a las buenas obras"
+          },
+          {
+            "texto": "Congregarnos y exhortarnos",
+            "detalle": "Sostener juntos una vida de perseverancia"
+          },
+          {
+            "texto": "Esperar aquel día",
+            "detalle": "Todo tiene un horizonte: el regreso de Cristo"
+          }
+        ],
+        "notas": "Puedo estar presente en la reunión y, sin embargo, descuidar el propósito para el que nos reunimos."
+      },
+      {
+        "id": "d37",
+        "n": 39,
+        "bloque": "10",
+        "plantilla": "pregunta",
+        "pregunta": "¿Qué necesita mi comunidad de mí que **no se resuelve** con entregar una buena reflexión?",
+        "notas": "Completar entre todos: que entienda lo que digo, que conozca a quienes escuchan, que viva lo que enseño, que pueda acompañar."
+      },
+      {
+        "id": "d38",
+        "n": 40,
+        "bloque": "10",
+        "plantilla": "lista",
+        "titulo": "Volvemos a la IA y comparamos",
+        "items": [
+          {
+            "texto": "¿Qué dijo que nosotros también vimos?"
+          },
+          {
+            "texto": "¿Qué agregó que no habíamos visto?"
+          },
+          {
+            "texto": "¿Qué no dijo, o dijo en general?"
+          },
+          {
+            "texto": "¿Cómo sabemos si está bien?"
+          }
+        ],
+        "notas": "Mostrar la respuesta de ChatGPT. Si hay tiempo, segunda consigna dirigida con lo que encontramos."
+      },
+      {
+        "id": "d39",
+        "n": 41,
+        "bloque": "10",
+        "plantilla": "frase",
+        "frase": "La IA es tan buena como la **sepamos dirigir**.",
+        "apoyo": "Y para dirigirla hay que saber qué buscar.",
+        "notas": "Eso no lo resuelve la IA: lo forman el estudio, la iglesia y el tiempo."
+      },
+      {
+        "id": "d40",
+        "n": 42,
+        "bloque": "10",
+        "plantilla": "frase",
+        "frase": "**Mayordomía**: lo que recibimos, al servicio de otros.",
+        "apoyo": [
+          "1 Pedro 4:10–11 · Efesios 4:1–2",
+          "No valemos por lo que producimos."
+        ],
+        "notas": "El llamado es personal, pero se vive con otros. Ese es el legado: lo que dejo formado en otros."
+      },
+      {
+        "id": "d41",
+        "n": 43,
+        "bloque": "11",
+        "plantilla": "en_vivo",
+        "titulo": "Sus preguntas",
+        "renglones": 5,
+        "notas": "Temas agrupados de las respuestas del QR. Para los que no se alcancen: una pista de por dónde buscar."
+      },
+      {
+        "id": "d42",
+        "n": 44,
+        "bloque": "11",
+        "plantilla": "lista",
+        "titulo": "Las preguntas que nos trajeron",
+        "items": [
+          {
+            "texto": "¿Abrazar, temer o ignorar?",
+            "detalle": "Ninguna alcanza: discernir qué nos está formando."
+          },
+          {
+            "texto": "¿Reemplazar el discernimiento?",
+            "detalle": "Puede producir contenido; no puede formarse por nosotros."
+          },
+          {
+            "texto": "¿Oportunidades y riesgos?",
+            "detalle": "Las cuatro preguntas de los grupos."
+          }
+        ],
+        "notas": "Después: 2 minutos de revisión personal en silencio."
+      },
+      {
+        "id": "d43",
+        "n": 45,
+        "bloque": "11",
+        "plantilla": "pregunta",
+        "pregunta": "Lo que decidí, **¿a quién más alcanza?**",
+        "notas": "Empezamos respondiendo cada uno por su cuenta. Terminamos con una pregunta más."
+      },
+      {
+        "id": "d44",
+        "n": 46,
+        "bloque": "12",
+        "plantilla": "lista",
+        "titulo": "Primero yo, después la IA",
+        "items": [
+          {
+            "texto": "Leo y observo, sin IA"
+          },
+          {
+            "texto": "Escribo qué creo y qué tan seguro estoy"
+          },
+          {
+            "texto": "Le pido a la IA alternativas y objeciones"
+          },
+          {
+            "texto": "Vuelvo al texto: ¿lo puedo explicar sin la IA?"
+          }
+        ],
+        "notas": "Herramienta concreta para llevarse."
+      },
+      {
+        "id": "d45",
+        "n": 47,
+        "bloque": "12",
+        "plantilla": "lista",
+        "titulo": "Para llevarte",
+        "items": [
+          {
+            "texto": "Hoy aprendí…"
+          },
+          {
+            "texto": "Me quedo pensando en…"
+          },
+          {
+            "texto": "Esta semana voy a probar…"
+          }
+        ],
+        "notas": "Completar en silencio. Después, oración final."
+      },
+      {
+        "id": "d46",
+        "n": 48,
+        "bloque": "12",
+        "plantilla": "portada",
+        "etiqueta": "> fin",
+        "titulo": "Gracias",
+        "subtitulo": "IA, iglesia y legado",
+        "pie": "[contacto opcional]",
+        "notas": "Cierre."
+      },
+      {
+        "id": "d47",
+        "n": 49,
+        "bloque": "12",
+        "plantilla": "recursos",
+        "titulo": "Recursos y fuentes",
+        "items": [
+          {
+            "texto": "Autor y otros, 2026 · NBER w35720",
+            "detalle": "Ensayo aleatorizado con 133 abogados de patentes, con y sin asistente de IA."
+          },
+          {
+            "texto": "Anthropic, 2026",
+            "detalle": "52 programadores aprendiendo algo nuevo, con y sin IA."
+          },
+          {
+            "texto": "Fernandes y otros · Computers in Human Behavior, 2026",
+            "detalle": "Con IA rendimos más, pero creemos saber más de lo que sabemos."
+          },
+          {
+            "texto": "Dong Yan · Frontiers in Psychology, 2026",
+            "detalle": "218 futuros docentes: pensar primero o ver primero a la IA."
+          },
+          {
+            "texto": "AI and Ethics, 2026",
+            "detalle": "576 afirmaciones doctrinales de once tradiciones."
+          },
+          {
+            "texto": "Biblia",
+            "detalle": "Hebreos 10:24–25 (RV60 y NTV) · 1 Pedro 4:10–11 · Efesios 4:1–2"
+          }
+        ],
+        "url": "https://estudiotaller.web.app/material",
+        "rotulo_qr": "el material del taller",
+        "notas": "Para quien quiera el material: el QR lleva a todas las diapositivas (solo lectura, se puede guardar como PDF). Las fuentes son las citadas en las diapositivas de datos (bloque 7) y en la 33. Verificar las referencias completas antes de compartir."
+      }
+    ]
+  }
+}
