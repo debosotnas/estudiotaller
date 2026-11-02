@@ -36,7 +36,7 @@ async function iniciar() {
 
   $app.innerHTML = `<div class="admin">
     <header>
-      <div class="titulo"><div class="mono lima">// estudio taller</div><h1>Mis presentaciones</h1></div>
+      <div class="titulo"><a class="mono lima" href="/" style="text-decoration:none">// estudio taller</a><h1>Mis presentaciones</h1></div>
       <span class="sec mono" style="font-size:13px">${esc(user.email)}${admin ? " · superadmin" : ""}</span>
       <button class="btn sec-btn chico" id="salir">salir</button>
     </header>

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#07090B">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Estudio Taller</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/fonts/space-grotesk-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/senal.css">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body class="cuerpo-movil">
+  <main class="movil">
+    <div class="top"><span>// estudio taller</span><span class="sec" id="quien">conectando…</span></div>
+    <section class="compartida" id="compartida" hidden>
+      <div class="compartida-cab"><span class="etq">● en pantalla</span><button class="btn sec-btn chico" id="ampliar">ver en grande ⤢</button></div>
+      <div class="stage" id="vst"></div>
+    </section>
+    <div id="app" class="contenido"></div>
+  </main>
+  <script type="module" src="/js/participante.js"></script>
+  <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});</script>
+</body>
+</html>

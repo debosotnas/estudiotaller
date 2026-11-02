@@ -5,7 +5,7 @@ export function codigoSesion(def) {
   const q = new URLSearchParams(location.search).get("s");
   if (q) return q;
   const p = location.pathname.replace(/^\/+|\/+$/g, "");
-  if (p && !p.includes("/") && !p.includes(".") && !["presentar", "admin", "index", "pizarron", "material", "presentaciones"].includes(p)) return p;
+  if (p && !p.includes("/") && !p.includes(".") && !["presentar", "admin", "index", "pizarron", "material", "presentaciones", "participar"].includes(p)) return p;
   return def.sesion;
 }
 

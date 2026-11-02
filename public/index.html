@@ -4,24 +4,53 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#07090B">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>Estudio Taller</title>
+  <title>Estudio Taller · presentaciones con el público adentro</title>
+  <meta name="description" content="Creá y presentá diapositivas con actividades en vivo desde el celular: votaciones, nube de palabras, preguntas del público, quiz con puntaje, pizarrón y material para compartir.">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="/fonts/space-grotesk-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/css/senal.css">
   <link rel="stylesheet" href="/css/app.css">
 </head>
-<body class="cuerpo-movil">
-  <main class="movil">
-    <div class="top"><span>// estudio taller</span><span class="sec" id="quien">conectando…</span></div>
-    <section class="compartida" id="compartida" hidden>
-      <div class="compartida-cab"><span class="etq">● en pantalla</span><button class="btn sec-btn chico" id="ampliar">ver en grande ⤢</button></div>
-      <div class="stage" id="vst"></div>
+<body class="inicio">
+  <header class="ini-cab">
+    <span class="mono lima">// estudio taller</span>
+    <a class="mono sec" href="https://github.com/debosotnas/estudiotaller" target="_blank" rel="noopener">código abierto ↗</a>
+  </header>
+
+  <main>
+    <section class="ini-hero">
+      <h1>Tu taller, con el público <span class="lima">adentro</span><span class="lima blink">_</span></h1>
+      <p class="sec">Creá diapositivas, presentalas en el proyector y hacé que todos participen desde el celular: votaciones, nube de palabras, preguntas, quiz con puntaje y pizarrón. Sin instalar nada.</p>
+      <div class="acciones ini-acciones">
+        <button class="btn" id="comenzar">comenzar →</button>
+        <span class="sec ini-nota" id="nota-login">Entrás con tu cuenta de Google.</span>
+      </div>
     </section>
-    <div id="app" class="contenido"></div>
+
+    <section class="ini-carrusel" aria-roledescription="carrusel" aria-label="Qué se puede hacer">
+      <div class="car-ventana"><div class="car-pista" id="pista"></div></div>
+      <div class="car-controles">
+        <button class="car-flecha" id="car-ant" aria-label="anterior">←</button>
+        <div class="car-puntos" id="puntos"></div>
+        <button class="car-flecha" id="car-sig" aria-label="siguiente">→</button>
+      </div>
+    </section>
+
+    <section class="ini-participar">
+      <h2>¿Te pasaron un código?</h2>
+      <form class="fila" id="fcodigo">
+        <input id="codigo" placeholder="por ejemplo: legado" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="código de la presentación">
+        <button class="btn sec-btn" type="submit">entrar como participante</button>
+      </form>
+    </section>
   </main>
-  <script type="module" src="/js/participante.js"></script>
+
+  <footer class="ini-pie mono sec">
+    <span>Estudio Taller · código abierto (MIT) · por <a href="https://github.com/debosotnas" target="_blank" rel="noopener">Obed Santos</a></span>
+    <a href="https://github.com/debosotnas/estudiotaller" target="_blank" rel="noopener">github.com/debosotnas/estudiotaller</a>
+  </footer>
+
+  <script type="module" src="/js/inicio.js"></script>
   <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});</script>
 </body>
 </html>

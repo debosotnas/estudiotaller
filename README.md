@@ -4,7 +4,8 @@ Web app para crear y presentar diapositivas con actividades en vivo desde el cel
 
 Nació para el taller «IA, iglesia y legado» y creció hasta poder armar cualquier presentación.
 
-- **Participantes:** https://estudiotaller.web.app/legado (es la URL del QR)
+- **Inicio:** https://estudiotaller.web.app — qué se puede hacer (carrusel dibujado con el propio motor de diapositivas), **comenzar** (entra con Google y lleva a Mis presentaciones) y un campo para que un participante entre con su código.
+- **Participantes:** https://estudiotaller.web.app/legado (`/<código>` de cada presentación; es la URL del QR). La página es `public/participar.html`; cualquier ruta que no sea un archivo cae ahí.
 - **Presentador:** https://estudiotaller.web.app/presentar
 - **Admin / respuestas:** https://estudiotaller.web.app/admin
 - **Material (solo lectura, para compartir):** https://estudiotaller.web.app/material — todas las diapositivas visibles, completas, sin notas ni resultados; se ven en grande y se pueden guardar como PDF. Está en el QR de la última diapositiva («Recursos y fuentes») y en la pantalla de espera de los celulares.

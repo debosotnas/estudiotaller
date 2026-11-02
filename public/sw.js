@@ -1,14 +1,14 @@
 // Service worker: guarda la app en el dispositivo para que cargue aunque se corte internet.
 // Con conexión siempre se usa la red (así llegan las versiones nuevas); sin conexión, o si la red tarda, lo guardado.
-const CACHE = "estudiotaller-v1";
+const CACHE = "estudiotaller-v2";
 const SDK = "https://www.gstatic.com/firebasejs/12.19.0/";
 const PRECARGA = [
-  "/", "/presentar", "/admin", "/pizarron", "/material", "/presentaciones",
+  "/", "/participar", "/presentar", "/admin", "/pizarron", "/material", "/presentaciones",
   "/css/senal.css", "/css/app.css", "/favicon.svg",
   "/data/taller_ia_slides.json", "/data/actividades.json",
   "/js/firebase.js", "/js/slides.js", "/js/actividades.js", "/js/presentacion.js", "/js/participante.js", "/js/presentar.js",
   "/js/admin.js", "/js/material.js", "/js/pizarron.js", "/js/pizarron-comun.js", "/js/presentaciones.js", "/js/editor.js",
-  "/js/libre.js", "/js/plantillas-base.js", "/js/pptx.js", "/js/version.js", "/vendor/qrcode.mjs",
+  "/js/libre.js", "/js/plantillas-base.js", "/js/pptx.js", "/js/version.js", "/js/inicio.js", "/vendor/qrcode.mjs",
   "/fonts/space-grotesk-latin-500-normal.woff2", "/fonts/space-grotesk-latin-700-normal.woff2",
   "/fonts/space-grotesk-latin-ext-500-normal.woff2", "/fonts/space-grotesk-latin-ext-700-normal.woff2",
   "/fonts/jetbrains-mono-latin-500-normal.woff2", "/fonts/jetbrains-mono-latin-700-normal.woff2",
@@ -51,7 +51,7 @@ self.addEventListener("fetch", (ev) => {
       if (guardada) return guardada;
       try { return await red; } catch {}                               // lenta pero sin copia: esperar a la red
       // Sin red: páginas de participantes (/<código>) y otras navegaciones usan la página principal guardada
-      if (req.mode === "navigate") return (await cache.match("/")) || Response.error();
+      if (req.mode === "navigate") return (await cache.match("/participar")) || Response.error();
       return Response.error();
     }
   })());
