@@ -1220,7 +1220,7 @@
         "nombre_caso": "133 abogados · 3 meses",
         "texto": "Dos tercios trabajaron con un asistente de IA y el resto sin IA. Con IA, el trabajo salió mejor. Al final, todos tuvieron que revisar un trabajo por su cuenta.",
         "remate": "Esta vez, sin IA.",
-        "notas": "Autor y otros, 2026 (NBER w35720). Contarlo como historia."
+        "notas": "David Autor y otros, 2026 (NBER w35720). Contarlo como historia."
       },
       {
         "id": "d23",
@@ -1425,7 +1425,7 @@
         "plantilla": "frase",
         "frase": "La IA tiende a **aplanar** lo que creemos.",
         "apoyo": "Mezcla tradiciones y pierde matices: bautismo, ordenanzas, iglesia. Si solo leemos síntesis, olvidamos *por qué* creemos lo que creemos.",
-        "notas": "Un estudio de 2026 con 576 afirmaciones doctrinales de once tradiciones encontró ese patrón (AI and Ethics)."
+        "notas": "Un estudio de 2026 con 576 afirmaciones doctrinales de once tradiciones encontró ese patrón (Jason Owen, revista AI and Ethics)."
       },
       {
         "id": "d33",
@@ -1638,12 +1638,13 @@
       {
         "id": "d47",
         "n": 49,
+        "rev": 2,
         "bloque": "12",
         "plantilla": "recursos",
         "titulo": "Recursos y fuentes",
         "items": [
           {
-            "texto": "Autor y otros, 2026 · NBER w35720",
+            "texto": "David Autor y otros · NBER w35720, 2026",
             "detalle": "Ensayo aleatorizado con 133 abogados de patentes, con y sin asistente de IA."
           },
           {
@@ -1659,7 +1660,7 @@
             "detalle": "218 futuros docentes: pensar primero o ver primero a la IA."
           },
           {
-            "texto": "AI and Ethics, 2026",
+            "texto": "Jason Owen · AI and Ethics, 2026",
             "detalle": "576 afirmaciones doctrinales de once tradiciones."
           },
           {
