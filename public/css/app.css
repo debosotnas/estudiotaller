@@ -395,3 +395,17 @@ td.vacio { color: var(--linea); }
 @media (max-width: 760px) {
   .car-lamina { grid-template-columns: 1fr; gap: 14px; }
 }
+
+/* consola: barra de actividad compacta; respuestas en un contenedor debajo de la pantalla */
+.panel-act { align-items: center; flex-wrap: wrap; max-height: none; padding: 8px 16px; gap: 10px 18px; }
+.panel-act .info { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px 14px; min-width: 0; flex: 1; }
+.panel-act .info .nombre { font-size: 16px; }
+.panel-act .info .resumen { font-size: 13px; }
+.panel-act > .botones { display: flex; gap: 8px; flex-wrap: wrap; }
+.detalle { border-top: 2px solid var(--lima); padding: 16px; min-height: 60vh; }
+.detalle-cab { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+.detalle-cab .rotulo { color: var(--lima); font-size: 13px; }
+.detalle-cab .sec { font-size: 13px; margin-right: auto; }
+.detalle .lista { max-height: none; overflow: visible; }
+/* el editor no aplasta sus campos: si no entran, se desplaza */
+.editor > * { flex-shrink: 0; }

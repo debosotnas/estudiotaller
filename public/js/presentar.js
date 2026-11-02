@@ -308,6 +308,10 @@ async function consola() {
     </div>
     <div class="panel-act" id="panel"></div>
   </div>
+  <section class="detalle" id="detalle" hidden>
+    <div class="detalle-cab"><span class="rotulo" id="detalle-titulo"></span><span class="sec" id="detalle-ayuda"></span><button class="btn sec-btn chico" id="cerrar-detalle">ocultar respuestas ▴</button></div>
+    <div class="lista" id="lista"></div>
+  </section>
   <div class="modal" id="modal" hidden></div>`;
   const st = document.getElementById("st");
   const $der = document.getElementById("der");
@@ -1296,9 +1300,23 @@ async function consola() {
   function cerrarModal() { const m = document.getElementById("modal"); m.hidden = true; m.dataset.vista = ""; }
 
   // ---- panel de la actividad ----
+  // Respuestas en detalle: debajo de la pantalla, solo cuando se piden (así la consola no se achica)
+  let verDetalle = (() => { try { return localStorage.getItem("et_ver_detalle") === "1"; } catch { return false; } })();
+  function alternarDetalle(abrir = !verDetalle) {
+    verDetalle = abrir;
+    try { localStorage.setItem("et_ver_detalle", abrir ? "1" : "0"); } catch {}
+    panel();
+    if (abrir) document.getElementById("detalle").scrollIntoView({ behavior: "smooth", block: "start" });
+    else window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  document.getElementById("cerrar-detalle").onclick = () => alternarDetalle(false);
+
   function panel() {
     const $p = document.getElementById("panel");
+    const $d = document.getElementById("detalle");
     const a = actDelPanel();
+    const conLista = a && ["abiertas", "qa", "quiz"].includes(a.tipo);
+    $d.hidden = !(conLista && verDetalle);
     if (!a) {
       const activa = e.actividad && actividadPorId(acts, e.actividad);
       $p.innerHTML = `<div class="info"><div class="rotulo">actividad</div><div class="sec">Esta diapositiva no tiene actividad.</div>
@@ -1319,18 +1337,22 @@ async function consola() {
       respuestas.filter((r) => r.actividad === a.id).forEach((r) => (g[r.grupo || "?"] = (g[r.grupo || "?"] || 0) + 1));
       resumen = Object.keys(g).sort().map((k) => `grupo ${esc(k)}: <b>${g[k]}</b>`).join(" · ") || "sin respuestas";
     }
+    const cuantas = `<b class="lima">${res.total}</b> ${a.tipo === "qa" ? `pregunta${res.total === 1 ? "" : "s"} · ${qa.votos.filter((v) => v.actividad === a.id).length} votos` : `respuesta${res.total === 1 ? "" : "s"}`}`;
     $p.innerHTML = `<div class="info">
-        <div class="rotulo">actividad · ${esc(a.tipo)}${a.anonimo ? " · anónima" : ""}</div>
-        <div class="nombre">${esc(a.titulo)}</div>
-        <div><span class="punto ${abierta ? "on" : ""}"></span>${abierta ? "abierta" : "cerrada"} · <b class="lima">${res.total}</b> ${a.tipo === "qa" ? `pregunta${res.total === 1 ? "" : "s"} · ${qa.votos.filter((v) => v.actividad === a.id).length} votos` : `respuesta${res.total === 1 ? "" : "s"}`}</div>
-        ${resumen ? `<div class="sec" style="font-size:14px">${resumen}</div>` : ""}
-        <div class="botones">
-          <button class="btn chico ${abierta ? "sec-btn" : ""}" id="abr">${abierta ? "cerrar (A)" : "abrir (A)"}</button>
-          ${esDeEsta ? `<button class="btn chico ${e.revelar ? "" : "sec-btn"}" id="rev">${e.revelar ? "ocultar resultados (R)" : "mostrar resultados (R)"}</button>` : ""}
-        </div>
-        ${muro ? `<div class="sec" style="font-size:13px">Tocá ★ para mostrar una respuesta en pantalla.</div>` : ""}
+        <span class="rotulo">actividad · ${esc(a.tipo)}${a.anonimo ? " · anónima" : ""}</span>
+        <span class="nombre">${esc(a.titulo)}</span>
+        <span><span class="punto ${abierta ? "on" : ""}"></span>${abierta ? "abierta" : "cerrada"} · ${cuantas}</span>
+        ${resumen ? `<span class="sec resumen">${resumen}</span>` : ""}
       </div>
-      <div class="lista" id="lista"></div>`;
+      <div class="botones">
+        <button class="btn chico ${abierta ? "sec-btn" : ""}" id="abr">${abierta ? "cerrar (A)" : "abrir (A)"}</button>
+        ${esDeEsta ? `<button class="btn chico ${e.revelar ? "" : "sec-btn"}" id="rev">${e.revelar ? "ocultar resultados (R)" : "mostrar resultados (R)"}</button>` : ""}
+        ${conLista ? `<button class="btn chico ${verDetalle ? "" : "sec-btn"}" id="bdetalle">${verDetalle ? "ocultar respuestas ▴" : `ver ${a.tipo === "quiz" ? "ranking" : a.tipo === "qa" ? "preguntas" : "respuestas"} ▾`}</button>` : ""}
+      </div>`;
+    document.getElementById("detalle-titulo").textContent = `${{ abiertas: "respuestas", qa: "preguntas del público", quiz: "quiz" }[a.tipo] || ""} · ${a.titulo}`;
+    document.getElementById("detalle-ayuda").textContent = muro ? "Tocá ★ para mostrar una respuesta en pantalla." : a.tipo === "qa" ? "⊘ oculta · ✓ respondida" : "";
+    const bd = document.getElementById("bdetalle");
+    if (bd) bd.onclick = () => alternarDetalle();
     document.getElementById("abr").onclick = alternarAbierta;
     const rv = document.getElementById("rev");
     if (rv) rv.onclick = () => tecla("r");
